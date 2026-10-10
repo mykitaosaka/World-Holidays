@@ -16,7 +16,10 @@
   --sub:#6b6b6b;
   --line:#e4e4e4;
   --soft:#f4f4f4;
-  --season:#dadada;
+  --season:#ececec;
+  --bar-off:#8c8c8c;
+  --bar-auto:#c2c2c2;
+  --bar-hol:#a8a8a8;
   --today:#c8102e;
   --f-display:"Montserrat","Inter","Noto Sans JP",system-ui,sans-serif;
   --f-body:"Inter","Noto Sans JP",system-ui,sans-serif;
@@ -45,12 +48,12 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .spacer{flex:1}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:var(--sub);padding-block:12px}
 .legend i{display:inline-block;width:18px;height:8px;margin-right:6px;vertical-align:middle}
-.sw-off{background:var(--fg)}
-.sw-auto{background:#7a7a7a}
-.sw-fc{background:repeating-linear-gradient(135deg,var(--fg) 0 2px,transparent 2px 4px);border:1px solid var(--fg)}
+.sw-off{background:var(--bar-off)}
+.sw-auto{background:var(--bar-auto)}
+.sw-fc{background:repeating-linear-gradient(135deg,var(--bar-off) 0 2px,transparent 2px 4px);border:1px solid var(--bar-off)}
 .sw-season{background:var(--season)}
-.sw-custom{border:1px solid var(--fg)}
-.sw-hol{width:3px!important;background:var(--fg)}
+.sw-custom{border:1px solid var(--bar-off)}
+.sw-hol{width:3px!important;background:var(--bar-hol)}
 
 /* timeline */
 .tl-tools{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub);padding-block:4px 10px}
@@ -67,16 +70,16 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .tl-m{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-family:var(--f-display);font-size:10px;letter-spacing:.12em;padding:8px 0 0 5px;color:var(--sub)}
 .tl-row{height:38px;border-bottom:1px solid var(--soft)}
 .tl-grid{position:absolute;top:0;bottom:0;border-left:1px solid var(--soft)}
-.tl-hol{position:absolute;bottom:5px;height:4px;background:var(--fg);opacity:.55}
-.tl-p{position:absolute;top:10px;height:16px;min-width:3px;background:var(--fg)}
-.tl-p.auto{background:#7a7a7a;top:12px;height:12px}
-.tl-p.forecast{background:repeating-linear-gradient(135deg,var(--fg) 0 2px,transparent 2px 4px);border:1px solid var(--fg)}
+.tl-hol{position:absolute;bottom:5px;height:4px;background:var(--bar-hol)}
+.tl-p{position:absolute;top:10px;height:16px;min-width:3px;background:var(--bar-off)}
+.tl-p.auto{background:var(--bar-auto);top:12px;height:12px}
+.tl-p.forecast{background:repeating-linear-gradient(135deg,var(--bar-off) 0 2px,transparent 2px 4px);border:1px solid var(--bar-off)}
 .tl-p.season{background:var(--season);top:7px;height:22px;z-index:0}
-.tl-p.custom{background:transparent;border:1px solid var(--fg)}
+.tl-p.custom{background:transparent;border:1px solid var(--bar-off)}
 .tl-p.official,.tl-p.auto,.tl-p.forecast,.tl-p.custom{z-index:1}
 .tl-p.major{top:8px;height:20px}
-.tl-p:hover{outline:1px solid var(--fg);outline-offset:1px}
-.tl-p .lb{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:4px;font-size:10px;white-space:nowrap;color:var(--fg);pointer-events:none}
+.tl-p:hover{outline:1px solid var(--bar-off);outline-offset:1px}
+.tl-lb{position:absolute;top:50%;transform:translateY(-50%);z-index:3;font-size:10px;line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg);background:var(--bg);padding:0 4px;pointer-events:none}
 .tl-today{position:absolute;top:0;bottom:0;width:1px;background:var(--today);z-index:2;pointer-events:none}
 .tl-today::after{content:"TODAY";position:absolute;top:2px;left:4px;font-family:var(--f-display);font-size:9px;letter-spacing:.14em;color:var(--today)}
 
@@ -443,12 +446,21 @@ function renderTL(){
   for(const c of S.countries){
     let t=grid;
     for(const [d] of HOL[c]) if(d>=a&&d<=b) t+=`<div class="tl-hol" style="left:${(d-a)*ppd}px;width:${Math.max(ppd,2)}px"></div>`;
+    const bars=PER[c].filter(p=>p.k!=="season"&&p.e>=a&&p.s<=b).map(p=>p.s).sort((x,y)=>x-y);
+    let lbs="";
     PER[c].forEach((p,i)=>{
       if(p.e<a||p.s>b)return;
       const s=Math.max(p.s,a), e=Math.min(p.e,b);
-      const lb=(ppd>=9&&p.k!=="season")?`<span class="lb">${esc(p.n)}</span>`:"";
-      t+=`<button class="tl-p ${p.k}${p.major?" major":""}" data-c="${c}" data-i="${i}" style="left:${(s-a)*ppd}px;width:${(e-s+1)*ppd}px" aria-label="${esc(cname(c)+" "+p.n+" "+md(p.s)+"から"+md(p.e))}">${lb}</button>`;
+      t+=`<button class="tl-p ${p.k}${p.major?" major":""}" data-c="${c}" data-i="${i}" title="${esc(p.n+" "+md(p.s)+"〜"+md(p.e))}" style="left:${(s-a)*ppd}px;width:${(e-s+1)*ppd}px" aria-label="${esc(cname(c)+" "+p.n+" "+md(p.s)+"から"+md(p.e))}"></button>`;
+      if(ppd>=9&&p.k!=="season"){
+        // label sits right of the bar and stops before the next bar in the row
+        const next=bars.find(x=>x>e);
+        const left=(e-a+1)*ppd+2;
+        const room=(next===undefined?w:(next-a)*ppd-4)-left;
+        if(room>=30) lbs+=`<span class="tl-lb" style="left:${left}px;max-width:${room}px">${esc(p.n)}</span>`;
+      }
     });
+    t+=lbs;
     h+=`<div class="tl-row"><div class="tl-label" title="${VISITORS[c]?"訪日客数 "+fmtV(VISITORS[c])+"（2025年）":""}"><b>${c}</b><span>${cname(c)}</span></div><div class="tl-track" style="width:${w}px">${t}</div></div>`;
   }
   h+=today+`</div></div>`;
