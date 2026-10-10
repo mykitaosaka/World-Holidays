@@ -49,6 +49,7 @@ header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:spac
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:var(--sub);padding-block:12px}
 .legend i{display:inline-block;width:18px;height:8px;margin-right:6px;vertical-align:middle}
 .sw-off{background:var(--bar-off)}
+.sw-big{height:12px!important;background:var(--bar-off)}
 .sw-auto{background:var(--bar-auto)}
 .sw-fc{background:repeating-linear-gradient(135deg,var(--bar-off) 0 2px,transparent 2px 4px);border:1px solid var(--bar-off)}
 .sw-season{background:var(--season)}
@@ -194,12 +195,13 @@ footer{margin-top:36px;font-size:11px;color:var(--sub);line-height:1.8}
       <span id="ylabel">2026</span>
       <button id="ynext" aria-label="次の年">&#8250;</button>
     </div>
+    <div class="seg" id="lfseg" role="group" aria-label="絞り込み"><button data-lf="all">すべて</button><button data-lf="major">大型のみ</button></div>
     <div class="spacer"></div>
     <button class="pill" id="pickBtn">国・地域</button>
   </div>
 
   <div class="legend">
-    <span><i class="sw-off"></i>公式の大型連休</span>
+    <span><i class="sw-off"></i>公式の連休</span><span><i class="sw-big"></i>大型＝5日以上（太いバー）</span>
     <span><i class="sw-auto"></i>祝日＋週末の連休</span>
     <span><i class="sw-fc"></i>予測</span>
     <span><i class="sw-custom"></i>慣習的な休み</span>
@@ -385,7 +387,7 @@ for(const c of Object.keys(NAMES)){
 }
 const PER={}; // PER[c] = [{s,e,n,k,major,note,work}]
 for(const c of Object.keys(NAMES)){
-  const list=CURATED.filter(r=>r[0]===c).map(r=>({c,s:dn(r[1]),e:dn(r[2]),n:r[3],k:r[4],major:!!r[5],note:r[6],work:(r[7]||[]).map(dn)}));
+  const list=CURATED.filter(r=>r[0]===c).map(r=>({c,s:dn(r[1]),e:dn(r[2]),n:r[3],k:r[4],major:false,note:r[6],work:(r[7]||[]).map(dn)}));
   const blocking=list.filter(p=>p.k!=="season");
   const auth=AUTHORITATIVE[c]||[];
   const we=WEEKEND[c]||[6,0];
@@ -402,9 +404,9 @@ for(const c of Object.keys(NAMES)){
     if(auth.includes(y)) continue;
     if(blocking.some(p=>p.s<=b&&p.e>=a)) continue;
     const label=names.slice(0,2).join("・")+(names.length>2?" ほか":"");
-    const major=len>=5||/旧正月|テト|ソルラル|チュソク|断食明け|犠牲祭|ソンクラーン|クリスマス|春節|農曆|国庆|国慶|イースター|聖金曜日/.test(names.join());
-    list.push({c,s:a,e:b,n:label,k:"auto",major,note:"",work:[]});
+    list.push({c,s:a,e:b,n:label,k:"auto",major:false,note:"",work:[]});
   }
+  list.forEach(p=>{p.major=(p.e-p.s+1)>=5});
   list.sort((x,y)=>x.s-y.s);
   PER[c]=list;
 }
@@ -416,6 +418,9 @@ const KEY="world-holidays-v1";
 let S={view:"tl",year:+iso(TODAY).slice(0,4),month:+iso(TODAY).slice(5,7),countries:PRESETS[0][1].slice(),zoom:3,lf:"all",lr:"next"};
 try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s,{year:S.year,month:S.month});}catch(e){}
 if(!YEARS.includes(S.year))S.year=2026;
+if(S.lf!=="major")S.lf="all";
+const MAJ=()=>S.lf==="major";
+const vis=p=>!MAJ()||p.major;
 S.countries=sortCountries(S.countries.filter(c=>NAMES[c]));
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({view:S.view,countries:S.countries,zoom:S.zoom,lf:S.lf,lr:S.lr}))}catch(e){}};
 
@@ -430,6 +435,7 @@ function render(){
   $("#yprev").disabled=S.year<=YEARS[0]; $("#ynext").disabled=S.year>=YEARS[YEARS.length-1];
   $("#yprev").style.opacity=$("#yprev").disabled?.25:1; $("#ynext").style.opacity=$("#ynext").disabled?.25:1;
   $("#ystep").hidden=S.view==="l"&&S.lr==="next";
+  document.querySelectorAll("#lfseg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lf===S.lf));
   $("#pickBtn").textContent="国・地域（"+S.countries.length+"）";
   if(S.view==="tl")renderTL(); else if(S.view==="m")renderMonth(); else renderList();
 }
@@ -445,11 +451,11 @@ function renderTL(){
   h+=`<div class="tl-months"><div class="tl-label">COUNTRY</div><div class="tl-track" style="width:${w}px">${months}</div></div>`;
   for(const c of S.countries){
     let t=grid;
-    for(const [d] of HOL[c]) if(d>=a&&d<=b) t+=`<div class="tl-hol" style="left:${(d-a)*ppd}px;width:${Math.max(ppd,2)}px"></div>`;
-    const bars=PER[c].filter(p=>p.k!=="season"&&p.e>=a&&p.s<=b).map(p=>p.s).sort((x,y)=>x-y);
+    if(!MAJ()) for(const [d] of HOL[c]) if(d>=a&&d<=b) t+=`<div class="tl-hol" style="left:${(d-a)*ppd}px;width:${Math.max(ppd,2)}px"></div>`;
+    const bars=PER[c].filter(p=>vis(p)&&p.k!=="season"&&p.e>=a&&p.s<=b).map(p=>p.s).sort((x,y)=>x-y);
     let lbs="";
     PER[c].forEach((p,i)=>{
-      if(p.e<a||p.s>b)return;
+      if(p.e<a||p.s>b||!vis(p))return;
       const s=Math.max(p.s,a), e=Math.min(p.e,b);
       t+=`<button class="tl-p ${p.k}${p.major?" major":""}" data-c="${c}" data-i="${i}" title="${esc(p.n+" "+md(p.s)+"〜"+md(p.e))}" style="left:${(s-a)*ppd}px;width:${(e-s+1)*ppd}px" aria-label="${esc(cname(c)+" "+p.n+" "+md(p.s)+"から"+md(p.e))}"></button>`;
       if(ppd>=9&&p.k!=="season"){
@@ -473,10 +479,10 @@ function renderTL(){
 function dayInfo(n){
   const out=[];
   for(const c of S.countries){
-    const ps=PER[c].filter(p=>p.s<=n&&p.e>=n);
+    const ps=PER[c].filter(p=>p.s<=n&&p.e>=n&&vis(p));
     const hol=HOL[c].get(n);
-    const work=PER[c].some(p=>p.work.includes(n));
-    if(ps.length||hol||work) out.push({c,ps,hol,work});
+    const work=PER[c].some(p=>vis(p)&&p.work.includes(n));
+    if(MAJ()?(ps.length||work):(ps.length||hol||work)) out.push({c,ps,hol,work});
   }
   return out;
 }
@@ -509,8 +515,7 @@ function listItems(){
   S.countries.forEach(c=>PER[c].forEach((p,i)=>{
     if(p.e<a||p.s>b)return;
     const len=p.e-p.s+1;
-    if(S.lf==="5"&&len<5)return;
-    if(S.lf==="major"&&!p.major)return;
+    if(!vis(p))return;
     items.push({p,i,len});
   }));
   items.sort((x,y)=>x.p.s-y.p.s||y.len-x.len);
@@ -519,7 +524,6 @@ function listItems(){
 function renderList(){
   const items=listItems();
   let h=`<div class="lf"><div class="seg"><button data-lr="next" aria-pressed="${S.lr==="next"}">今日から1年</button><button data-lr="year" aria-pressed="${S.lr==="year"}">${S.year}年</button></div>
-  <div class="seg"><button data-lf="all" aria-pressed="${S.lf==="all"}">すべて</button><button data-lf="5" aria-pressed="${S.lf==="5"}">5日以上</button><button data-lf="major" aria-pressed="${S.lf==="major"}">大型のみ</button></div>
   <div class="spacer"></div><button class="pill" id="copyBtn">表をコピー</button></div>`;
   if(!items.length){h+=`<div class="empty">該当する連休はありません</div>`;$("#view").innerHTML=h;return}
   let cur="";
@@ -571,7 +575,7 @@ function periodSheet(c,i){
   let h=`<div class="sh-h"><div><div class="eb">${c} ・ ${cname(c)}</div><h2>${esc(p.n)}</h2></div><button class="x" aria-label="閉じる">&times;</button></div>
   <dl class="kv"><dt>期間</dt><dd>${iso(p.s).slice(0,4)}年 ${mdw(p.s)} 〜 ${mdw(p.e)}</dd>
   <dt>日数</dt><dd>${len}日間</dd>
-  <dt>区分</dt><dd>${KIND[p.k]}${p.major?" ・ 大型":""}</dd>
+  <dt>区分</dt><dd>${KIND[p.k]}${p.major?" ・ 大型（5日以上）":""}</dd>
   <dt>開始まで</dt><dd>${p.s>TODAY?"あと"+(p.s-TODAY)+"日":p.e>=TODAY?"開催中":"終了"}</dd>
   ${p.work.length?`<dt>振替出勤日</dt><dd>${p.work.map(mdw).join("、")}</dd>`:""}</dl>`;
   if(p.note)h+=`<div class="note">${esc(p.note)}</div>`;
@@ -685,10 +689,10 @@ document.querySelector(".seg[aria-label='表示切替']").addEventListener("clic
 $("#yprev").onclick=()=>{if(S.year>YEARS[0]){S.year--;render()}};
 $("#ynext").onclick=()=>{if(S.year<YEARS[YEARS.length-1]){S.year++;render()}};
 $("#pickBtn").onclick=pickerSheet;
+$("#lfseg").addEventListener("click",e=>{const b=e.target.closest("[data-lf]");if(!b)return;S.lf=b.dataset.lf;save();render()});
 $("#view").addEventListener("click",e=>{
   const z=e.target.closest("[data-z]"); if(z){S.zoom=+z.dataset.z;save();render();return}
   const lr=e.target.closest("[data-lr]"); if(lr){S.lr=lr.dataset.lr;save();render();return}
-  const lf=e.target.closest("[data-lf]"); if(lf){S.lf=lf.dataset.lf;save();render();return}
   const p=e.target.closest("[data-c][data-i]"); if(p){periodSheet(p.dataset.c,+p.dataset.i);return}
   const d=e.target.closest(".cell[data-d]"); if(d&&!d.classList.contains("out")){daySheet(+d.dataset.d)}
 });
