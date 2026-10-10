@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>World Holidays</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Montserrat:wght@300;400;500&family=Noto+Sans+JP:wght@300;400;500&display=swap">
+<style>
+/* Layout: MYKITA tool system — white ground, black hairlines, a horizontal year chart as the centerpiece */
+:root{
+  --bg:#ffffff;
+  --fg:#111111;
+  --sub:#6b6b6b;
+  --line:#e4e4e4;
+  --soft:#f4f4f4;
+  --season:#dadada;
+  --today:#c8102e;
+  --f-display:"Montserrat","Inter","Noto Sans JP",system-ui,sans-serif;
+  --f-body:"Inter","Noto Sans JP",system-ui,sans-serif;
+  color-scheme:light only !important;
+}
+html,body{background:var(--bg)!important;color:var(--fg)!important}
+*{box-sizing:border-box}
+body{font-family:var(--f-body);font-weight:300;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-inline:16px;padding-block:0 64px}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible{outline:1px solid var(--fg);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-block:28px 18px;border-bottom:1px solid var(--fg)}
+.brand h1{font-family:var(--f-display);font-weight:300;font-size:22px;letter-spacing:.32em;margin:0;line-height:1.2}
+.brand p{margin:4px 0 0;color:var(--sub);font-size:12px;letter-spacing:.06em}
+.asof{font-size:11px;color:var(--sub);letter-spacing:.08em;font-variant-numeric:tabular-nums}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding-block:14px;border-bottom:1px solid var(--line)}
+.seg{display:flex;border:1px solid var(--fg)}
+.seg button{font-family:var(--f-display);font-size:12px;letter-spacing:.14em;padding:8px 14px;min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.stepper{display:flex;align-items:center;gap:4px}
+.stepper button{width:34px;height:34px;display:grid;place-items:center;font-size:16px}
+.stepper span{font-family:var(--f-display);font-size:16px;letter-spacing:.08em;min-width:58px;text-align:center;font-variant-numeric:tabular-nums}
+.pill{border:1px solid var(--fg);padding:7px 14px;font-size:12px;letter-spacing:.06em;min-height:36px}
+.spacer{flex:1}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:11px;color:var(--sub);padding-block:12px}
+.legend i{display:inline-block;width:18px;height:8px;margin-right:6px;vertical-align:middle}
+.sw-off{background:var(--fg)}
+.sw-auto{background:#7a7a7a}
+.sw-fc{background:repeating-linear-gradient(135deg,var(--fg) 0 2px,transparent 2px 4px);border:1px solid var(--fg)}
+.sw-season{background:var(--season)}
+.sw-custom{border:1px solid var(--fg)}
+.sw-hol{width:3px!important;background:var(--fg)}
+
+/* timeline */
+.tl-tools{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub);padding-block:4px 10px}
+.tl-tools .seg button{padding:5px 10px;min-height:30px;font-size:11px}
+.tl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.tl{position:relative}
+.tl-months,.tl-row{display:flex;position:relative}
+.tl-label{position:sticky;left:0;z-index:3;background:var(--bg);flex:0 0 96px;width:96px;border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;padding-left:2px}
+.tl-label b{font-family:var(--f-display);font-weight:500;font-size:11px;letter-spacing:.1em;width:24px}
+.tl-label span{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-months{height:30px;border-bottom:1px solid var(--line)}
+.tl-months .tl-label{font-size:10px;color:var(--sub);letter-spacing:.12em}
+.tl-track{position:relative;flex:0 0 auto}
+.tl-m{position:absolute;top:0;bottom:0;border-left:1px solid var(--line);font-family:var(--f-display);font-size:10px;letter-spacing:.12em;padding:8px 0 0 5px;color:var(--sub)}
+.tl-row{height:38px;border-bottom:1px solid var(--soft)}
+.tl-grid{position:absolute;top:0;bottom:0;border-left:1px solid var(--soft)}
+.tl-hol{position:absolute;bottom:5px;height:4px;background:var(--fg);opacity:.55}
+.tl-p{position:absolute;top:10px;height:16px;min-width:3px;background:var(--fg)}
+.tl-p.auto{background:#7a7a7a;top:12px;height:12px}
+.tl-p.forecast{background:repeating-linear-gradient(135deg,var(--fg) 0 2px,transparent 2px 4px);border:1px solid var(--fg)}
+.tl-p.season{background:var(--season);top:7px;height:22px;z-index:0}
+.tl-p.custom{background:transparent;border:1px solid var(--fg)}
+.tl-p.official,.tl-p.auto,.tl-p.forecast,.tl-p.custom{z-index:1}
+.tl-p.major{top:8px;height:20px}
+.tl-p:hover{outline:1px solid var(--fg);outline-offset:1px}
+.tl-p .lb{position:absolute;left:100%;top:50%;transform:translateY(-50%);margin-left:4px;font-size:10px;white-space:nowrap;color:var(--fg);pointer-events:none}
+.tl-today{position:absolute;top:0;bottom:0;width:1px;background:var(--today);z-index:2;pointer-events:none}
+.tl-today::after{content:"TODAY";position:absolute;top:2px;left:4px;font-family:var(--f-display);font-size:9px;letter-spacing:.14em;color:var(--today)}
+
+/* month */
+.mhead{display:flex;align-items:center;justify-content:space-between;padding-block:6px 10px}
+.mhead h2{font-family:var(--f-display);font-weight:300;font-size:18px;letter-spacing:.16em;margin:0;font-variant-numeric:tabular-nums}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--fg);border-left:1px solid var(--line)}
+.cal .dw{font-family:var(--f-display);font-size:10px;letter-spacing:.14em;text-align:center;padding:6px 0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--sub)}
+.cell{min-height:78px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;text-align:left;display:flex;flex-direction:column;gap:3px;min-width:0}
+.cell.out{background:var(--soft);color:#b5b5b5}
+.cell .dn{font-family:var(--f-display);font-size:12px;font-variant-numeric:tabular-nums}
+.cell.we .dn{color:var(--sub)}
+.cell.td .dn{color:var(--today);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:2px}
+.chip{font-family:var(--f-display);font-size:9px;letter-spacing:.06em;line-height:1;padding:3px 3px 2px;border:1px solid var(--fg)}
+.chip.on{background:var(--fg);color:var(--bg)}
+.chip.ss{border-color:var(--season);background:var(--season)}
+.chip.more{border-color:transparent;color:var(--sub)}
+
+/* list */
+.lf{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-block:4px 12px}
+.lf .seg button{padding:6px 12px;min-height:32px;font-size:11px}
+.lgroup h3{font-family:var(--f-display);font-weight:400;font-size:12px;letter-spacing:.2em;margin:22px 0 0;padding-bottom:6px;border-bottom:1px solid var(--fg)}
+.li{display:grid;grid-template-columns:126px 40px minmax(0,1fr) auto;gap:4px 12px;align-items:baseline;width:100%;text-align:left;padding:12px 0;border-bottom:1px solid var(--line)}
+.li:hover{background:var(--soft)}
+.li .dt{font-variant-numeric:tabular-nums;font-size:13px}
+.li .dt small{display:block;color:var(--sub);font-size:11px}
+.li .cc{font-family:var(--f-display);font-weight:500;font-size:12px;letter-spacing:.1em}
+.li .nm{min-width:0}
+.li .nm b{font-weight:400}
+.li .nm small{display:block;color:var(--sub);font-size:11px}
+.li .rt{text-align:right;font-size:11px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
+.li .rt strong{display:block;font-family:var(--f-display);font-weight:400;font-size:15px;color:var(--fg)}
+.tag{display:inline-block;font-size:10px;letter-spacing:.06em;border:1px solid var(--fg);padding:0 5px;margin-left:6px;vertical-align:1px;font-weight:400}
+.tag.fc{border-style:dashed}
+.tag.mj{background:var(--fg);color:var(--bg)}
+.empty{padding:40px 0;color:var(--sub);text-align:center}
+@media (max-width:560px){
+  .li{grid-template-columns:96px minmax(0,1fr) auto}
+  .li .cc{display:none}
+  .li .nm b::before{content:attr(data-cc) "  ";font-family:var(--f-display);font-weight:500;letter-spacing:.1em}
+  .cell{min-height:64px;padding:3px}
+  .chip{font-size:8px;padding:2px 2px 1px}
+  .tl-label{flex-basis:64px;width:64px}
+  .tl-label span{display:none}
+}
+
+/* sheet */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:620px;max-height:86vh;overflow:auto;padding:22px 20px calc(24px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--fg);animation:up .22s ease-out}
+@media (min-width:700px){.ov{align-items:center}.sheet{border:1px solid var(--fg)}}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sh-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sh-h .eb{font-family:var(--f-display);font-size:11px;letter-spacing:.2em;color:var(--sub)}
+.sh-h h2{font-weight:400;font-size:19px;margin:2px 0 0;text-wrap:balance;line-height:1.35}
+.x{width:36px;height:36px;font-size:20px;flex:0 0 auto}
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px 12px;margin:18px 0 0;font-size:13px}
+.kv dt{color:var(--sub);font-size:11px;letter-spacing:.06em;padding-top:2px}
+.kv dd{margin:0;font-variant-numeric:tabular-nums}
+.note{margin-top:16px;padding:12px 14px;background:var(--soft);font-size:13px}
+.dl{list-style:none;margin:6px 0 0;padding:0}
+.dl li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}
+.dl li span:first-child{font-variant-numeric:tabular-nums;white-space:nowrap;min-width:72px;color:var(--sub)}
+.dnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px;padding-block:6px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:10px;color:var(--sub);letter-spacing:.06em}
+.dnav button{font-size:12px;color:var(--fg);padding:6px 4px;min-height:32px;font-variant-numeric:tabular-nums}
+.dnav button:disabled{opacity:.25}
+.ov.day .sheet{touch-action:pan-y;overflow-x:hidden}
+.dsb{will-change:transform}
+.cell.sel{outline:1px solid var(--fg);outline-offset:-1px;background:var(--soft)}
+.sec{font-family:var(--f-display);font-size:11px;letter-spacing:.2em;margin:20px 0 0;color:var(--sub)}
+
+/* picker */
+.pk-search{width:100%;font:inherit;font-size:16px;font-weight:300;border:0;border-bottom:1px solid var(--fg);padding:10px 0;margin-top:14px;background:transparent;color:var(--fg);border-radius:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.presets button{border:1px solid var(--fg);padding:6px 10px;font-size:12px}
+.reg h4{font-family:var(--f-display);font-weight:400;font-size:11px;letter-spacing:.2em;margin:18px 0 4px;color:var(--sub)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0 12px}
+.cbox{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px}
+.cbox input{appearance:none;width:16px;height:16px;border:1px solid var(--fg);margin:0;flex:0 0 auto;display:grid;place-items:center;border-radius:0}
+.cbox input:checked{background:var(--fg)}
+.cbox input:checked::after{content:"";width:6px;height:6px;background:var(--bg)}
+.cbox .vis{display:block;font-size:10px;color:var(--sub);font-variant-numeric:tabular-nums;line-height:1.2}
+.dl a{color:var(--fg);text-underline-offset:3px}
+.cbox b{font-family:var(--f-display);font-weight:500;font-size:11px;letter-spacing:.1em;width:22px}
+.sh-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}
+.btn-k{background:var(--fg);color:var(--bg);padding:10px 22px;font-family:var(--f-display);letter-spacing:.14em;font-size:12px}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;font-size:12px;z-index:60;letter-spacing:.04em}
+footer a{color:inherit}
+footer{margin-top:36px;font-size:11px;color:var(--sub);line-height:1.8}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>WORLD HOLIDAYS</h1>
+      <p>世界の祝祭日・大型連休カレンダー</p>
+    </div>
+    <div class="asof" id="asof"></div>
+  </header>
+
+  <div class="bar">
+    <div class="seg" role="group" aria-label="表示切替">
+      <button id="v-tl" data-v="tl">年表</button>
+      <button id="v-m" data-v="m">月</button>
+      <button id="v-l" data-v="l">一覧</button>
+    </div>
+    <div class="stepper" id="ystep">
+      <button id="yprev" aria-label="前の年">&#8249;</button>
+      <span id="ylabel">2026</span>
+      <button id="ynext" aria-label="次の年">&#8250;</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="pill" id="pickBtn">国・地域</button>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw-off"></i>公式の大型連休</span>
+    <span><i class="sw-auto"></i>祝日＋週末の連休</span>
+    <span><i class="sw-fc"></i>予測</span>
+    <span><i class="sw-custom"></i>慣習的な休み</span>
+    <span><i class="sw-season"></i>休暇シーズン（目安）</span>
+    <span><i class="sw-hol"></i>祝日</span>
+  </div>
+
+  <main id="view"></main>
+
+  <footer>
+    祝日データ: 2026年は中国・韓国・香港・タイ・シンガポール・マレーシア・インドネシア・ベトナム・フィリピン・インド・アメリカ・オーストラリア・UAE・イギリス・フランスを<a href="https://www.jetro.go.jp/world/" target="_blank" rel="noopener">JETRO</a>の国・地域別「祝祭日」ページで照合済み。台湾は行政院人事行政總處の発表、その他の国と年はdate-holidaysのデータ（2025–2028年）です。訪日客数はJNTO「訪日外客統計」2025年確定値。<br>
+    予測と表示されている期間は例年の傾向による見込みで、正式発表後に変わる可能性があります。中国の翌年日程は例年11月、台湾は6月頃に発表されます。イスラム暦の祝日は月の観測により前後することがあります。
+  </footer>
+</div>
+
+<script>
+const RAW = {"JP":{"2025":[["01-01","元日"],["01-13","成人の日"],["02-11","建国記念の日"],["02-23","天皇誕生日"],["02-24","天皇誕生日 (振替休日)"],["03-20","春分の日"],["04-29","昭和の日"],["05-03","憲法記念日"],["05-04","みどりの日"],["05-05","こどもの日"],["05-06","みどりの日 (振替休日)"],["07-21","海の日"],["08-11","山の日"],["09-15","敬老の日"],["09-23","秋分の日"],["10-13","スポーツの日"],["11-03","文化の日"],["11-23","勤労感謝の日"],["11-24","勤労感謝の日 (振替休日)"]],"2026":[["01-01","元日"],["01-12","成人の日"],["02-11","建国記念の日"],["02-23","天皇誕生日"],["03-20","春分の日"],["04-29","昭和の日"],["05-03","憲法記念日"],["05-04","みどりの日"],["05-05","こどもの日"],["05-06","憲法記念日（振替休日）"],["07-20","海の日"],["08-11","山の日"],["09-21","敬老の日"],["09-22","国民の休日"],["09-23","秋分の日"],["10-12","スポーツの日"],["11-03","文化の日"],["11-23","勤労感謝の日"]],"2027":[["01-01","元日"],["01-11","成人の日"],["02-11","建国記念の日"],["02-23","天皇誕生日"],["03-21","春分の日"],["03-22","春分の日（振替休日）"],["04-29","昭和の日"],["05-03","憲法記念日"],["05-04","みどりの日"],["05-05","こどもの日"],["07-19","海の日"],["08-11","山の日"],["09-20","敬老の日"],["09-23","秋分の日"],["10-11","スポーツの日"],["11-03","文化の日"],["11-23","勤労感謝の日"]],"2028":[["01-01","元日"],["01-10","成人の日"],["02-11","建国記念の日"],["02-23","天皇誕生日"],["03-20","春分の日"],["04-29","昭和の日"],["05-03","憲法記念日"],["05-04","みどりの日"],["05-05","こどもの日"],["07-17","海の日"],["08-11","山の日"],["09-18","敬老の日"],["09-22","秋分の日"],["10-09","スポーツの日"],["11-03","文化の日"],["11-23","勤労感謝の日"]]},"CN":{"2025":[["01-01","元旦"],["01-28","春节"],["01-29","春节"],["01-30","春节"],["04-04","清明节 清明節"],["05-01","劳动节"],["05-31","端午节"],["10-01","国庆节"],["10-02","国庆节"],["10-03","国庆节"],["10-06","中秋节"]],"2026":[["01-01","元旦"],["02-16","春节"],["02-17","春节"],["02-18","春节"],["04-05","清明节 清明節"],["05-01","劳动节"],["06-19","端午节"],["09-25","中秋节"],["10-01","国庆节"],["10-02","国庆节"],["10-03","国庆节"]],"2027":[["01-01","元旦"],["02-05","春节"],["02-06","春节"],["02-07","春节"],["04-05","清明节 清明節"],["05-01","劳动节"],["06-09","端午节"],["09-15","中秋节"],["10-01","国庆节"],["10-02","国庆节"],["10-03","国庆节"]],"2028":[["01-01","元旦"],["01-25","春节"],["01-26","春节"],["01-27","春节"],["04-04","清明节 清明節"],["05-01","劳动节"],["05-28","端午节"],["10-01","国庆节"],["10-02","国庆节"],["10-03","国庆节 / 中秋节"]]},"TW":{"2025":[["01-01","中華民國開國紀念日 / 元旦"],["01-28","農曆除夕"],["01-29","農曆年初一"],["01-30","農曆年初二"],["01-31","農曆年初三"],["02-01","農曆年初四"],["02-02","农历新年假期"],["02-28","228和平紀念日"],["04-04","兒童節 / 淸明節"],["05-31","端午節"],["10-06","中秋節"],["10-10","國慶日 / 雙十節"]],"2026":[["01-01","中華民國開國紀念日 / 元旦"],["02-16","農曆除夕"],["02-17","農曆年初一"],["02-18","農曆年初二"],["02-19","農曆年初三"],["02-20","農曆年初四"],["02-21","农历新年假期"],["02-28","228和平紀念日"],["04-04","兒童節"],["04-05","淸明節"],["04-06","淸明節 (更换日)"],["06-19","端午節"],["09-25","中秋節"],["10-10","國慶日 / 雙十節"]],"2027":[["01-01","中華民國開國紀念日 / 元旦"],["02-05","農曆除夕"],["02-06","農曆年初一"],["02-07","農曆年初二"],["02-08","農曆年初三"],["02-09","農曆年初四"],["02-10","农历新年假期"],["02-28","228和平紀念日"],["03-01","228和平紀念日 (更换日)"],["04-04","兒童節"],["04-05","兒童節 (更换日) / 淸明節"],["06-09","端午節"],["09-15","中秋節"],["10-10","國慶日 / 雙十節"],["10-11","國慶日 / 雙十節 (更换日)"],["12-31","中華民國開國紀念日 / 元旦 (更换日)"]],"2028":[["01-01","中華民國開國紀念日 / 元旦"],["01-25","農曆除夕"],["01-26","農曆年初一"],["01-27","農曆年初二"],["01-28","農曆年初三"],["01-29","農曆年初四"],["01-30","农历新年假期"],["02-28","228和平紀念日"],["04-04","兒童節 / 淸明節"],["05-28","端午節"],["05-29","端午節 (更换日)"],["10-03","中秋節"],["10-10","國慶日 / 雙十節"]]},"HK":{"2025":[["01-01","一月一日"],["01-29","農曆年初一"],["01-30","農曆年初二"],["01-31","農曆年初三"],["04-04","清明節"],["04-18","耶穌受難節"],["04-19","耶穌受難節翌日"],["04-21","復活節星期一"],["05-01","勞動節"],["05-05","佛誕"],["05-31","端午節"],["07-01","香港特別行政區成立紀念日"],["10-01","國慶日"],["10-07","中秋節翌日"],["10-29","重陽節"],["12-25","聖誕節"],["12-26","聖誕節後第一個周日"]],"2026":[["01-01","一月一日"],["02-17","農曆年初一"],["02-18","農曆年初二"],["02-19","農曆年初三"],["04-03","耶穌受難節"],["04-04","耶穌受難節翌日"],["04-06","清明節翌日"],["04-07","復活節星期一翌日"],["05-01","勞動節"],["05-25","佛誕翌日"],["06-19","端午節"],["07-01","香港特別行政區成立紀念日"],["09-26","中秋節翌日"],["10-01","國慶日"],["10-19","重陽節翌日"],["12-25","聖誕節"],["12-26","聖誕節後第一個周日"]],"2027":[["01-01","一月一日"],["02-06","農曆年初一"],["02-08","農曆年初三"],["02-09","農曆年初四"],["03-26","耶穌受難節"],["03-27","耶穌受難節翌日"],["03-29","復活節星期一"],["04-05","清明節"],["05-01","勞動節"],["05-13","佛誕"],["06-09","端午節"],["07-01","香港特別行政區成立紀念日"],["09-16","中秋節翌日"],["10-01","國慶日"],["10-08","重陽節"],["12-25","聖誕節"],["12-27","聖誕節後第一個周日"]],"2028":[["01-01","一月一日"],["01-26","農曆年初一"],["01-27","農曆年初二"],["01-28","農曆年初三"],["04-04","清明節"],["04-14","耶穌受難節"],["04-15","耶穌受難節翌日"],["04-17","復活節星期一"],["05-01","勞動節"],["05-02","佛誕"],["05-29","端午節翌日"],["07-01","香港特別行政區成立紀念日"],["10-02","國慶日翌日"],["10-04","中秋節翌日"],["10-26","重陽節"],["12-25","聖誕節"],["12-26","聖誕節後第一個周日"]]},"KR":{"2025":[["01-01","New Year's Day"],["01-29","Korean New Year"],["01-30","Korean New Year"],["01-31","Korean New Year"],["03-01","Independence Movement Day"],["03-03","Independence Movement Day (substitute day)"],["05-05","Children's Day / Buddha's Birthday"],["05-06","Children's Day (substitute day) / Buddha's Birthday (substitute day)"],["06-06","Memorial Day"],["08-15","Liberation Day"],["10-03","National Foundation Day"],["10-05","Korean Thanksgiving"],["10-06","Korean Thanksgiving"],["10-07","Korean Thanksgiving"],["10-08","Korean Thanksgiving (substitute day)"],["10-09","Hangul Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["02-17","Korean New Year"],["02-18","Korean New Year"],["02-19","Korean New Year"],["03-01","Independence Movement Day"],["03-02","Independence Movement Day (substitute day)"],["05-05","Children's Day"],["05-24","Buddha's Birthday"],["05-25","Buddha's Birthday (substitute day)"],["06-06","Memorial Day"],["07-17","Constitution Day"],["08-15","Liberation Day"],["08-17","Liberation Day (substitute day)"],["09-24","Korean Thanksgiving"],["09-25","Korean Thanksgiving"],["09-26","Korean Thanksgiving"],["10-03","National Foundation Day"],["10-05","National Foundation Day (substitute day)"],["10-09","Hangul Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["02-07","Korean New Year"],["02-08","Korean New Year"],["02-09","Korean New Year / Korean New Year (substitute day)"],["03-01","Independence Movement Day"],["05-05","Children's Day"],["05-13","Buddha's Birthday"],["06-06","Memorial Day"],["07-17","Constitution Day"],["07-19","Constitution Day (substitute day)"],["08-15","Liberation Day"],["08-16","Liberation Day (substitute day)"],["09-14","Korean Thanksgiving"],["09-15","Korean Thanksgiving"],["09-16","Korean Thanksgiving"],["10-03","National Foundation Day"],["10-04","National Foundation Day (substitute day)"],["10-09","Hangul Day"],["10-11","Hangul Day (substitute day)"],["12-25","Christmas Day"],["12-27","Christmas Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["01-27","Korean New Year"],["01-28","Korean New Year"],["01-29","Korean New Year"],["03-01","Independence Movement Day"],["05-02","Buddha's Birthday"],["05-05","Children's Day"],["06-06","Memorial Day"],["07-17","Constitution Day"],["08-15","Liberation Day"],["10-02","Korean Thanksgiving"],["10-03","Korean Thanksgiving / National Foundation Day"],["10-04","Korean Thanksgiving"],["10-05","National Foundation Day (substitute day) / Korean Thanksgiving (substitute day)"],["10-09","Hangul Day"],["12-25","Christmas Day"]]},"TH":{"2025":[["01-01","New Year's Day"],["02-13","Makha Bucha"],["04-06","Chakri Memorial Day"],["04-13","Songkran Festival"],["04-14","Songkran Festival"],["04-15","Songkran Festival"],["05-04","Coronation Day"],["05-12","Vesak Day"],["06-03","Queen Suthida's Birthday"],["07-10","Asalha Puja"],["07-11","Buddhist Lent"],["07-28","King's Birthday"],["08-12","The Queen Mother's Birthday"],["10-13","King Bhumibol Adulyadej Memorial Day"],["10-23","King Chulalongkorn Day"],["12-05","King Bhumibol Adulyadej's Birthday"],["12-10","Constitution Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["03-03","Makha Bucha"],["04-06","Chakri Memorial Day"],["04-13","Songkran Festival"],["04-14","Songkran Festival"],["04-15","Songkran Festival"],["05-04","Coronation Day"],["05-31","Vesak Day"],["06-03","Queen Suthida's Birthday"],["07-28","King's Birthday"],["07-29","Asalha Puja"],["07-30","Buddhist Lent"],["08-12","The Queen Mother's Birthday"],["10-13","King Bhumibol Adulyadej Memorial Day"],["10-23","King Chulalongkorn Day"],["12-05","King Bhumibol Adulyadej's Birthday"],["12-10","Constitution Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["04-06","Chakri Memorial Day"],["04-13","Songkran Festival"],["04-14","Songkran Festival"],["04-15","Songkran Festival"],["05-04","Coronation Day"],["06-03","Queen Suthida's Birthday"],["07-28","King's Birthday"],["08-12","The Queen Mother's Birthday"],["10-13","King Bhumibol Adulyadej Memorial Day"],["10-23","King Chulalongkorn Day"],["12-05","King Bhumibol Adulyadej's Birthday"],["12-10","Constitution Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["04-06","Chakri Memorial Day"],["04-13","Songkran Festival"],["04-14","Songkran Festival"],["04-15","Songkran Festival"],["05-04","Coronation Day"],["06-03","Queen Suthida's Birthday"],["07-28","King's Birthday"],["08-12","The Queen Mother's Birthday"],["10-13","King Bhumibol Adulyadej Memorial Day"],["10-23","King Chulalongkorn Day"],["12-05","King Bhumibol Adulyadej's Birthday"],["12-10","Constitution Day"],["12-31","New Year's Eve"]]},"SG":{"2025":[["01-01","New Year's Day"],["01-29","Chinese New Year"],["01-30","Chinese New Year"],["03-31","Hari Raya Puasa"],["04-18","Good Friday"],["05-01","Labour Day"],["05-12","Vesak Day"],["06-07","Hari Raya Haji"],["08-09","National Day"],["10-20","Deepavali"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["02-17","Chinese New Year"],["02-18","Chinese New Year"],["03-21","Hari Raya Puasa"],["04-03","Good Friday"],["05-01","Labour Day"],["05-27","Hari Raya Haji"],["05-31","Vesak Day"],["06-01","Vesak Day"],["08-09","National Day"],["08-10","National Day (substitute day)"],["11-08","Deepavali"],["11-09","Deepavali"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["02-06","Chinese New Year"],["02-07","Chinese New Year"],["02-08","Chinese New Year (substitute day)"],["03-09","Hari Raya Puasa"],["03-26","Good Friday"],["05-01","Labour Day"],["05-16","Hari Raya Haji"],["08-09","National Day"],["10-28","Deepavali"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["01-26","Chinese New Year"],["01-27","Chinese New Year"],["02-26","Hari Raya Puasa"],["04-14","Good Friday"],["05-01","Labour Day"],["05-05","Hari Raya Haji"],["08-09","National Day"],["11-15","Deepavali"],["12-25","Christmas Day"]]},"MY":{"2025":[["01-01","New Year's Day"],["01-29","Chinese New Year"],["01-30","Chinese New Year"],["03-17","Day of Nuzul Al-Quran"],["03-30","End of Ramadan (Eid al-Fitr)"],["03-31","End of Ramadan (Eid al-Fitr)"],["05-01","Labour Day"],["05-12","Vesak Day"],["06-02","Yang di-Pertuan Agong's Birthday"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-26","Islamic New Year"],["08-31","Independence Day"],["09-01","Independence Day (substitute day)"],["09-04","Birthday of Muhammad (Mawlid)"],["09-16","Malaysia Day"],["10-20","Deepavali"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["02-17","Chinese New Year"],["02-18","Chinese New Year"],["03-07","Day of Nuzul Al-Quran"],["03-21","End of Ramadan (Eid al-Fitr)"],["03-22","End of Ramadan (Eid al-Fitr)"],["05-01","Labour Day"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["05-31","Vesak Day"],["06-01","Yang di-Pertuan Agong's Birthday"],["06-17","Islamic New Year"],["08-25","Birthday of Muhammad (Mawlid)"],["08-31","Independence Day"],["09-16","Malaysia Day"],["11-08","Deepavali"],["11-09","Deepavali"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["02-06","Chinese New Year"],["02-07","Chinese New Year"],["02-08","Chinese New Year (substitute day)"],["02-24","Day of Nuzul Al-Quran"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-10","End of Ramadan (Eid al-Fitr)"],["05-01","Labour Day"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["06-06","Islamic New Year"],["06-07","Yang di-Pertuan Agong's Birthday"],["08-14","Birthday of Muhammad (Mawlid)"],["08-31","Independence Day"],["09-16","Malaysia Day"],["10-28","Deepavali"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["01-26","Chinese New Year"],["01-27","Chinese New Year"],["02-13","Day of Nuzul Al-Quran"],["02-26","End of Ramadan (Eid al-Fitr)"],["02-27","End of Ramadan (Eid al-Fitr)"],["05-01","Labour Day"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["05-25","Islamic New Year"],["06-05","Yang di-Pertuan Agong's Birthday"],["08-03","Birthday of Muhammad (Mawlid)"],["08-31","Independence Day"],["09-16","Malaysia Day"],["11-15","Deepavali"],["12-25","Christmas Day"]]},"ID":{"2025":[["01-01","New Year's Day"],["01-27","Laylat al-Mi'raj"],["01-29","Chinese New Year"],["03-29","Nyepi"],["03-30","End of Ramadan (Eid al-Fitr)"],["03-31","End of Ramadan (Eid al-Fitr)"],["04-18","Good Friday"],["05-01","Labour Day"],["05-12","Vesak Day"],["05-29","Ascension Day"],["06-01","Pancasila Day"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-26","Islamic New Year"],["08-17","Independence Day"],["09-05","Birthday of Muhammad (Mawlid)"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["01-16","Laylat al-Mi'raj"],["02-17","Chinese New Year"],["03-19","Nyepi"],["03-20","End of Ramadan (Eid al-Fitr)"],["03-21","End of Ramadan (Eid al-Fitr)"],["04-03","Good Friday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["05-31","Vesak Day"],["06-01","Pancasila Day"],["06-16","Islamic New Year"],["08-17","Independence Day"],["08-25","Birthday of Muhammad (Mawlid)"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["01-05","Laylat al-Mi'raj"],["02-06","Chinese New Year"],["03-08","Nyepi"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-10","End of Ramadan (Eid al-Fitr)"],["03-26","Good Friday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["05-20","Vesak Day"],["06-01","Pancasila Day"],["06-06","Islamic New Year"],["08-14","Birthday of Muhammad (Mawlid)"],["08-17","Independence Day"],["12-25","Laylat al-Mi'raj / Christmas Day"]],"2028":[["01-01","New Year's Day"],["01-26","Chinese New Year"],["02-26","End of Ramadan (Eid al-Fitr)"],["02-27","End of Ramadan (Eid al-Fitr)"],["04-14","Good Friday"],["05-01","Labour Day"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["05-25","Islamic New Year / Ascension Day"],["06-01","Pancasila Day"],["08-03","Birthday of Muhammad (Mawlid)"],["08-17","Independence Day"],["12-14","Laylat al-Mi'raj"],["12-25","Christmas Day"]]},"PH":{"2025":[["01-01","New Year's Day"],["03-30","End of Ramadan (Eid al-Fitr)"],["04-09","Day of Valor"],["04-17","Maundy Thursday"],["04-18","Good Friday"],["04-20","Easter Sunday"],["05-01","Labour Day"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-12","Independence Day"],["08-25","National Heroes' Day"],["11-30","Bonifacio Day"],["12-25","Christmas Day"],["12-30","Rizal Day"]],"2026":[["01-01","New Year's Day"],["03-20","End of Ramadan (Eid al-Fitr)"],["04-02","Maundy Thursday"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-09","Day of Valor"],["05-01","Labour Day"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["06-12","Independence Day"],["08-31","National Heroes' Day"],["11-30","Bonifacio Day"],["12-25","Christmas Day"],["12-30","Rizal Day"]],"2027":[["01-01","New Year's Day"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-25","Maundy Thursday"],["03-26","Good Friday"],["03-28","Easter Sunday"],["04-09","Day of Valor"],["05-01","Labour Day"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["06-12","Independence Day"],["08-30","National Heroes' Day"],["11-30","Bonifacio Day"],["12-25","Christmas Day"],["12-30","Rizal Day"]],"2028":[["01-01","New Year's Day"],["02-26","End of Ramadan (Eid al-Fitr)"],["04-09","Day of Valor"],["04-13","Maundy Thursday"],["04-14","Good Friday"],["04-16","Easter Sunday"],["05-01","Labour Day"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["06-12","Independence Day"],["08-28","National Heroes' Day"],["11-30","Bonifacio Day"],["12-25","Christmas Day"],["12-30","Rizal Day"]]},"VN":{"2025":[["01-01","New Year's Day"],["01-28","Vietnamese New Year Holidays"],["01-29","Vietnamese New Year Holidays"],["01-30","Vietnamese New Year Holidays"],["01-31","Vietnamese New Year Holidays"],["02-01","Vietnamese New Year Holidays"],["04-07","Hung Kings Commemorations"],["04-30","Day of liberating the South for national reunification"],["05-01","Labour Day"],["09-02","National Day"]],"2026":[["01-01","New Year's Day"],["02-16","Vietnamese New Year Holidays"],["02-17","Vietnamese New Year Holidays"],["02-18","Vietnamese New Year Holidays"],["02-19","Vietnamese New Year Holidays"],["02-20","Vietnamese New Year Holidays"],["04-26","Hung Kings Commemorations"],["04-30","Day of liberating the South for national reunification"],["05-01","Labour Day"],["09-02","National Day"]],"2027":[["01-01","New Year's Day"],["02-05","Vietnamese New Year Holidays"],["02-06","Vietnamese New Year Holidays"],["02-07","Vietnamese New Year Holidays"],["02-08","Vietnamese New Year Holidays"],["02-09","Vietnamese New Year Holidays"],["04-16","Hung Kings Commemorations"],["04-30","Day of liberating the South for national reunification"],["05-01","Labour Day"],["09-02","National Day"]],"2028":[["01-01","New Year's Day"],["01-25","Vietnamese New Year Holidays"],["01-26","Vietnamese New Year Holidays"],["01-27","Vietnamese New Year Holidays"],["01-28","Vietnamese New Year Holidays"],["01-29","Vietnamese New Year Holidays"],["04-04","Hung Kings Commemorations"],["04-30","Day of liberating the South for national reunification"],["05-01","Labour Day"],["09-02","National Day"]]},"IN":{"2025":[["01-26","Republic Day"],["04-14","Ambedkar Jayanti"],["04-18","Good Friday"],["08-15","Independence Day"],["10-02","Gandhi Jayanti"],["12-25","Christmas Day"]],"2026":[["01-26","Republic Day"],["04-03","Good Friday"],["04-14","Ambedkar Jayanti"],["08-15","Independence Day"],["10-02","Gandhi Jayanti"],["12-25","Christmas Day"]],"2027":[["01-26","Republic Day"],["03-26","Good Friday"],["04-14","Ambedkar Jayanti"],["08-15","Independence Day"],["10-02","Gandhi Jayanti"],["12-25","Christmas Day"]],"2028":[["01-26","Republic Day"],["04-14","Ambedkar Jayanti / Good Friday"],["08-15","Independence Day"],["10-02","Gandhi Jayanti"],["12-25","Christmas Day"]]},"AU":{"2025":[["01-01","New Year's Day"],["01-27","Australia Day"],["04-18","Good Friday"],["04-19","Easter Saturday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["04-25","Anzac Day"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["01-26","Australia Day"],["04-03","Good Friday"],["04-04","Easter Saturday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["04-25","Anzac Day"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-28","Boxing Day (substitute day)"]],"2027":[["01-01","New Year's Day"],["01-26","Australia Day"],["03-26","Good Friday"],["03-27","Easter Saturday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["04-25","Anzac Day"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-27","Christmas Day (substitute day)"],["12-28","Boxing Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["01-03","New Year's Day"],["01-26","Australia Day"],["04-14","Good Friday"],["04-15","Easter Saturday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["04-25","Anzac Day"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"NZ":{"2025":[["01-01","New Year's Day"],["01-02","Day after New Year's Day"],["02-06","Waitangi Day"],["04-18","Good Friday"],["04-21","Easter Monday"],["04-25","ANZAC Day"],["06-02","King's Birthday"],["06-20","Matariki"],["10-27","Labour Day"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["01-02","Day after New Year's Day"],["02-06","Waitangi Day"],["04-03","Good Friday"],["04-06","Easter Monday"],["04-25","ANZAC Day"],["04-27","ANZAC Day (substitute day)"],["06-01","King's Birthday"],["07-10","Matariki"],["10-26","Labour Day"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-28","Boxing Day (substitute day)"]],"2027":[["01-01","New Year's Day"],["01-02","Day after New Year's Day"],["01-04","Day after New Year's Day (substitute day)"],["02-06","Waitangi Day"],["02-08","Waitangi Day (substitute day)"],["03-26","Good Friday"],["03-29","Easter Monday"],["04-25","ANZAC Day"],["04-26","ANZAC Day (substitute day)"],["06-07","King's Birthday"],["06-25","Matariki"],["10-25","Labour Day"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-27","Christmas Day (substitute day)"],["12-28","Boxing Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["01-02","Day after New Year's Day"],["01-03","New Year's Day (substitute day)"],["01-04","Day after New Year's Day (substitute day)"],["02-06","Waitangi Day"],["02-07","Waitangi Day (substitute day)"],["04-14","Good Friday"],["04-17","Easter Monday"],["04-25","ANZAC Day"],["06-05","King's Birthday"],["07-14","Matariki"],["10-23","Labour Day"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"US":{"2025":[["01-01","New Year's Day"],["01-20","Martin Luther King Jr. Day"],["02-17","Washington's Birthday"],["05-26","Memorial Day"],["06-19","Juneteenth"],["07-04","Independence Day"],["09-01","Labour Day"],["10-13","Columbus Day"],["11-11","Veterans Day"],["11-27","Thanksgiving Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["01-19","Martin Luther King Jr. Day"],["02-16","Washington's Birthday"],["05-25","Memorial Day"],["06-19","Juneteenth"],["07-03","Independence Day (substitute day)"],["07-04","Independence Day"],["09-07","Labour Day"],["10-12","Columbus Day"],["11-11","Veterans Day"],["11-26","Thanksgiving Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["01-18","Martin Luther King Jr. Day"],["02-15","Washington's Birthday"],["05-31","Memorial Day"],["06-18","Juneteenth (substitute day)"],["06-19","Juneteenth"],["07-04","Independence Day"],["07-05","Independence Day (substitute day)"],["09-06","Labour Day"],["10-11","Columbus Day"],["11-11","Veterans Day"],["11-25","Thanksgiving Day"],["12-24","Christmas Day (substitute day)"],["12-25","Christmas Day"],["12-31","New Year's Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["01-17","Martin Luther King Jr. Day"],["02-21","Washington's Birthday"],["05-29","Memorial Day"],["06-19","Juneteenth"],["07-04","Independence Day"],["09-04","Labour Day"],["10-09","Columbus Day"],["11-10","Veterans Day (substitute day)"],["11-11","Veterans Day"],["11-23","Thanksgiving Day"],["12-25","Christmas Day"]]},"CA":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["07-01","Canada Day"],["09-01","Labour Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["07-01","Canada Day"],["09-07","Labour Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["07-01","Canada Day"],["09-06","Labour Day"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["04-14","Good Friday"],["07-01","Canada Day"],["09-04","Labour Day"],["12-25","Christmas Day"]]},"MX":{"2025":[["01-01","New Year's Day"],["02-03","Constitution Day"],["03-17","Benito Juárez's birthday"],["04-17","Maundy Thursday"],["04-18","Good Friday"],["05-01","Labour Day"],["09-16","Independence Day"],["11-02","All Souls' Day"],["11-17","Revolution Day"],["12-12","Day of the Virgin of Guadalupe"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["02-02","Constitution Day"],["03-16","Benito Juárez's birthday"],["04-02","Maundy Thursday"],["04-03","Good Friday"],["05-01","Labour Day"],["09-16","Independence Day"],["11-02","All Souls' Day"],["11-16","Revolution Day"],["12-12","Day of the Virgin of Guadalupe"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["02-01","Constitution Day"],["03-15","Benito Juárez's birthday"],["03-25","Maundy Thursday"],["03-26","Good Friday"],["05-01","Labour Day"],["09-16","Independence Day"],["11-02","All Souls' Day"],["11-15","Revolution Day"],["12-12","Day of the Virgin of Guadalupe"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["02-07","Constitution Day"],["03-20","Benito Juárez's birthday"],["04-13","Maundy Thursday"],["04-14","Good Friday"],["05-01","Labour Day"],["09-16","Independence Day"],["11-02","All Souls' Day"],["11-20","Revolution Day"],["12-12","Day of the Virgin of Guadalupe"],["12-25","Christmas Day"]]},"BR":{"2025":[["01-01","New Year's Day"],["03-03","Carnival"],["03-04","Carnival"],["04-18","Good Friday"],["04-21","Tiradentes' Day"],["05-01","Labour Day"],["06-19","Corpus Christi"],["09-07","Independence Day"],["10-12","Our Lady of Aparecida"],["11-02","All Souls' Day"],["11-15","Republic Day"],["11-20","Black Awareness Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["02-16","Carnival"],["02-17","Carnival"],["04-03","Good Friday"],["04-21","Tiradentes' Day"],["05-01","Labour Day"],["06-04","Corpus Christi"],["09-07","Independence Day"],["10-04","Election Day"],["10-12","Our Lady of Aparecida"],["10-25","Election Day"],["11-02","All Souls' Day"],["11-15","Republic Day"],["11-20","Black Awareness Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["02-08","Carnival"],["02-09","Carnival"],["03-26","Good Friday"],["04-21","Tiradentes' Day"],["05-01","Labour Day"],["05-27","Corpus Christi"],["09-07","Independence Day"],["10-12","Our Lady of Aparecida"],["11-02","All Souls' Day"],["11-15","Republic Day"],["11-20","Black Awareness Day"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["02-28","Carnival"],["02-29","Carnival"],["04-14","Good Friday"],["04-21","Tiradentes' Day"],["05-01","Labour Day"],["06-15","Corpus Christi"],["09-07","Independence Day"],["10-01","Election Day"],["10-12","Our Lady of Aparecida"],["10-29","Election Day"],["11-02","All Souls' Day"],["11-15","Republic Day"],["11-20","Black Awareness Day"],["12-25","Christmas Day"]]},"GB":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["04-21","Easter Monday"],["05-05","Early May bank holiday"],["05-26","Spring bank holiday"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["04-06","Easter Monday"],["05-04","Early May bank holiday"],["05-25","Spring bank holiday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-28","Boxing Day (substitute day)"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["03-29","Easter Monday"],["05-03","Early May bank holiday"],["05-31","Spring bank holiday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-27","Christmas Day (substitute day)"],["12-28","Boxing Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["01-03","New Year's Day (substitute day)"],["04-14","Good Friday"],["04-17","Easter Monday"],["05-01","Early May bank holiday"],["05-29","Spring bank holiday"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"IE":{"2025":[["01-01","New Year's Day"],["02-03","St. Brigid’s Day"],["03-17","St. Patrick’s Day"],["04-18","Good Friday"],["04-21","Easter Monday"],["05-05","First Monday in May"],["06-02","First Monday in June"],["08-04","First Monday in August"],["10-27","Last Monday in October"],["12-25","Christmas Day"],["12-26","St. Stephen’s Day"]],"2026":[["01-01","New Year's Day"],["02-02","St. Brigid’s Day"],["03-17","St. Patrick’s Day"],["04-03","Good Friday"],["04-06","Easter Monday"],["05-04","First Monday in May"],["06-01","First Monday in June"],["08-03","First Monday in August"],["10-26","Last Monday in October"],["12-25","Christmas Day"],["12-26","St. Stephen’s Day"],["12-28","St. Stephen’s Day (substitute day)"]],"2027":[["01-01","New Year's Day"],["02-01","St. Brigid’s Day"],["03-17","St. Patrick’s Day"],["03-26","Good Friday"],["03-29","Easter Monday"],["05-03","First Monday in May"],["06-07","First Monday in June"],["08-02","First Monday in August"],["10-25","Last Monday in October"],["12-25","Christmas Day"],["12-26","St. Stephen’s Day"],["12-27","St. Stephen’s Day (substitute day)"]],"2028":[["01-01","New Year's Day"],["02-07","St. Brigid’s Day"],["03-17","St. Patrick’s Day"],["04-14","Good Friday"],["04-17","Easter Monday"],["05-01","First Monday in May"],["06-05","First Monday in June"],["08-07","First Monday in August"],["10-30","Last Monday in October"],["12-25","Christmas Day"],["12-26","St. Stephen’s Day"]]},"FR":{"2025":[["01-01","New Year's Day"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-08","Victory Day"],["05-29","Ascension Day"],["06-09","Whit Monday"],["07-14","Bastille Day"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-08","Victory Day"],["05-14","Ascension Day"],["05-25","Whit Monday"],["07-14","Bastille Day"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-08","Victory Day"],["05-17","Whit Monday"],["07-14","Bastille Day"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-08","Victory Day"],["05-25","Ascension Day"],["06-05","Whit Monday"],["07-14","Bastille Day"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]]},"DE":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-29","Ascension Day"],["06-09","Whit Monday"],["10-03","National Holiday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-25","Whit Monday"],["10-03","National Holiday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-17","Whit Monday"],["10-03","National Holiday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["04-14","Good Friday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-25","Ascension Day"],["06-05","Whit Monday"],["10-03","National Holiday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"IT":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["04-25","Liberation from Nazi-Fascism (1945)"],["05-01","Labour Day"],["06-02","Republic Day"],["08-15","Assumption"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["04-25","Liberation from Nazi-Fascism (1945)"],["05-01","Labour Day"],["06-02","Republic Day"],["08-15","Assumption"],["10-04","National Day of Saint Francis of Assisi"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["04-25","Liberation from Nazi-Fascism (1945)"],["05-01","Labour Day"],["06-02","Republic Day"],["08-15","Assumption"],["10-04","National Day of Saint Francis of Assisi"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["04-25","Liberation from Nazi-Fascism (1945)"],["05-01","Labour Day"],["06-02","Republic Day"],["08-15","Assumption"],["10-04","National Day of Saint Francis of Assisi"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"ES":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-18","Good Friday"],["05-01","Labour Day"],["08-15","Assumption"],["10-12","Fiesta Nacional de España"],["11-01","All Saints' Day"],["12-06","Día de la Constitución Española"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-03","Good Friday"],["05-01","Labour Day"],["08-15","Assumption"],["10-12","Fiesta Nacional de España"],["11-01","All Saints' Day"],["12-06","Día de la Constitución Española"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-26","Good Friday"],["05-01","Labour Day"],["08-15","Assumption"],["10-12","Fiesta Nacional de España"],["11-01","All Saints' Day"],["12-06","Día de la Constitución Española"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-14","Good Friday"],["05-01","Labour Day"],["08-15","Assumption"],["10-12","Fiesta Nacional de España"],["11-01","All Saints' Day"],["12-06","Día de la Constitución Española"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]]},"NL":{"2025":[["01-01","New Year's Day"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["04-26","King's Day"],["05-29","Ascension Day"],["06-08","Pentecost"],["06-09","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["04-27","King's Day"],["05-14","Ascension Day"],["05-24","Pentecost"],["05-25","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["04-27","King's Day"],["05-06","Ascension Day"],["05-16","Pentecost"],["05-17","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["04-27","King's Day"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-05","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"BE":{"2025":[["01-01","New Year's Day"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-29","Ascension Day"],["06-09","Whit Monday"],["07-21","National Holiday"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-25","Whit Monday"],["07-21","National Holiday"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-17","Whit Monday"],["07-21","National Holiday"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-25","Ascension Day"],["06-05","Whit Monday"],["07-21","National Holiday"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Armistice Day"],["12-25","Christmas Day"]]},"CH":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-29","Ascension Day"],["06-08","Pentecost"],["06-09","Whit Monday"],["08-01","Bundesfeiertag"],["09-21","Federal Day of Thanksgiving, Repentance and Prayer"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-14","Ascension Day"],["05-24","Pentecost"],["05-25","Whit Monday"],["08-01","Bundesfeiertag"],["09-20","Federal Day of Thanksgiving, Repentance and Prayer"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-06","Ascension Day"],["05-16","Pentecost"],["05-17","Whit Monday"],["08-01","Bundesfeiertag"],["09-19","Federal Day of Thanksgiving, Repentance and Prayer"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2028":[["01-01","New Year's Day"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-05","Whit Monday"],["08-01","Bundesfeiertag"],["09-17","Federal Day of Thanksgiving, Repentance and Prayer"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"AT":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-21","Easter Monday"],["05-01","Staatsfeiertag"],["05-29","Ascension Day"],["06-09","Whit Monday"],["06-19","Corpus Christi"],["08-15","Assumption"],["10-26","National Holiday"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-06","Easter Monday"],["05-01","Staatsfeiertag"],["05-14","Ascension Day"],["05-25","Whit Monday"],["06-04","Corpus Christi"],["08-15","Assumption"],["10-26","National Holiday"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-29","Easter Monday"],["05-01","Staatsfeiertag"],["05-06","Ascension Day"],["05-17","Whit Monday"],["05-27","Corpus Christi"],["08-15","Assumption"],["10-26","National Holiday"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-17","Easter Monday"],["05-01","Staatsfeiertag"],["05-25","Ascension Day"],["06-05","Whit Monday"],["06-15","Corpus Christi"],["08-15","Assumption"],["10-26","National Holiday"],["11-01","All Saints' Day"],["12-08","Immaculate Conception"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"SE":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-29","Ascension Day"],["06-06","National Day"],["06-08","Pentecost"],["06-20","Midsummer Eve"],["06-21","Midsummer Day"],["11-01","All Saints' Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-24","Pentecost"],["06-06","National Day"],["06-19","Midsummer Eve"],["06-20","Midsummer Day"],["10-31","All Saints' Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-26","Good Friday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-16","Pentecost"],["06-06","National Day"],["06-25","Midsummer Eve"],["06-26","Midsummer Day"],["11-06","All Saints' Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-06","National Day"],["06-23","Midsummer Eve"],["06-24","Midsummer Day"],["11-04","All Saints' Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"NO":{"2025":[["01-01","New Year's Day"],["04-17","Maundy Thursday"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-17","Constitution Day"],["05-29","Ascension Day"],["06-08","Pentecost"],["06-09","Whit Monday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["04-02","Maundy Thursday"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-17","Constitution Day"],["05-24","Pentecost"],["05-25","Whit Monday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["03-25","Maundy Thursday"],["03-26","Good Friday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-16","Pentecost"],["05-17","Constitution Day / Whit Monday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["04-13","Maundy Thursday"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-17","Constitution Day"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-05","Whit Monday"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"DK":{"2025":[["01-01","New Year's Day"],["04-17","Maundy Thursday"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-29","Ascension Day"],["06-08","Pentecost"],["06-09","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["04-02","Maundy Thursday"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-14","Ascension Day"],["05-24","Pentecost"],["05-25","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2027":[["01-01","New Year's Day"],["03-25","Maundy Thursday"],["03-26","Good Friday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-06","Ascension Day"],["05-16","Pentecost"],["05-17","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2028":[["01-01","New Year's Day"],["04-13","Maundy Thursday"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-05","Whit Monday"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"FI":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-29","Ascension Day"],["06-08","Pentecost"],["06-20","Midsummer Eve"],["06-21","Midsummer Day"],["11-01","All Saints' Day"],["12-06","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-14","Ascension Day"],["05-24","Pentecost"],["06-19","Midsummer Eve"],["06-20","Midsummer Day"],["10-31","All Saints' Day"],["12-06","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-26","Good Friday"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-06","Ascension Day"],["05-16","Pentecost"],["06-25","Midsummer Eve"],["06-26","Midsummer Day"],["11-06","All Saints' Day"],["12-06","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-25","Ascension Day"],["06-04","Pentecost"],["06-23","Midsummer Eve"],["06-24","Midsummer Day"],["11-04","All Saints' Day"],["12-06","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"],["12-31","New Year's Eve"]]},"PT":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["04-20","Easter Sunday"],["04-25","Liberty Day"],["05-01","Labour Day"],["06-10","Portugal Day"],["06-19","Corpus Christi"],["08-15","Assumption"],["10-05","Implantação da República"],["11-01","All Saints' Day"],["12-01","Restauração da Independência"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["04-05","Easter Sunday"],["04-25","Liberty Day"],["05-01","Labour Day"],["06-04","Corpus Christi"],["06-10","Portugal Day"],["08-15","Assumption"],["10-05","Implantação da República"],["11-01","All Saints' Day"],["12-01","Restauração da Independência"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["03-28","Easter Sunday"],["04-25","Liberty Day"],["05-01","Labour Day"],["05-27","Corpus Christi"],["06-10","Portugal Day"],["08-15","Assumption"],["10-05","Implantação da República"],["11-01","All Saints' Day"],["12-01","Restauração da Independência"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]],"2028":[["01-01","New Year's Day"],["04-14","Good Friday"],["04-16","Easter Sunday"],["04-25","Liberty Day"],["05-01","Labour Day"],["06-10","Portugal Day"],["06-15","Corpus Christi"],["08-15","Assumption"],["10-05","Implantação da República"],["11-01","All Saints' Day"],["12-01","Restauração da Independência"],["12-08","Immaculate Conception"],["12-25","Christmas Day"]]},"PL":{"2025":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-20","Easter Sunday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-03","Constitution Day"],["06-08","Pentecost"],["06-19","Corpus Christi"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-05","Easter Sunday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-03","Constitution Day"],["05-24","Pentecost"],["06-04","Corpus Christi"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2027":[["01-01","New Year's Day"],["01-06","Epiphany"],["03-28","Easter Sunday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-03","Constitution Day"],["05-16","Pentecost"],["05-27","Corpus Christi"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2028":[["01-01","New Year's Day"],["01-06","Epiphany"],["04-16","Easter Sunday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-03","Constitution Day"],["06-04","Pentecost"],["06-15","Corpus Christi"],["08-15","Assumption"],["11-01","All Saints' Day"],["11-11","Independence Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"CZ":{"2025":[["01-01","New Year's Day"],["04-18","Good Friday"],["04-21","Easter Monday"],["05-01","Labour Day"],["05-08","Liberation Day"],["07-05","Saints Cyril and Methodius Day"],["07-06","Jan Hus Day"],["09-28","St. Wenceslas Day (Czech Statehood Day)"],["10-28","Independent Czechoslovak State Day"],["11-17","Struggle for Freedom and Democracy Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2026":[["01-01","New Year's Day"],["04-03","Good Friday"],["04-06","Easter Monday"],["05-01","Labour Day"],["05-08","Liberation Day"],["07-05","Saints Cyril and Methodius Day"],["07-06","Jan Hus Day"],["09-28","St. Wenceslas Day (Czech Statehood Day)"],["10-28","Independent Czechoslovak State Day"],["11-17","Struggle for Freedom and Democracy Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2027":[["01-01","New Year's Day"],["03-26","Good Friday"],["03-29","Easter Monday"],["05-01","Labour Day"],["05-08","Liberation Day"],["07-05","Saints Cyril and Methodius Day"],["07-06","Jan Hus Day"],["09-28","St. Wenceslas Day (Czech Statehood Day)"],["10-28","Independent Czechoslovak State Day"],["11-17","Struggle for Freedom and Democracy Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]],"2028":[["01-01","New Year's Day"],["04-14","Good Friday"],["04-17","Easter Monday"],["05-01","Labour Day"],["05-08","Liberation Day"],["07-05","Saints Cyril and Methodius Day"],["07-06","Jan Hus Day"],["09-28","St. Wenceslas Day (Czech Statehood Day)"],["10-28","Independent Czechoslovak State Day"],["11-17","Struggle for Freedom and Democracy Day"],["12-24","Christmas Eve"],["12-25","Christmas Day"],["12-26","Boxing Day"]]},"AE":{"2025":[["01-01","New Year's Day"],["01-27","Laylat al-Mi'raj"],["03-01","First day of Ramadan"],["03-30","End of Ramadan (Eid al-Fitr)"],["03-31","End of Ramadan (Eid al-Fitr)"],["04-01","End of Ramadan (Eid al-Fitr)"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-07","Feast of the Sacrifice (Eid al-Adha)"],["06-08","Feast of the Sacrifice (Eid al-Adha)"],["06-26","Islamic New Year"],["09-04","Birthday of Muhammad (Mawlid)"],["12-02","National Day"]],"2026":[["01-01","New Year's Day"],["01-16","Laylat al-Mi'raj"],["03-20","End of Ramadan (Eid al-Fitr)"],["03-21","End of Ramadan (Eid al-Fitr)"],["03-22","End of Ramadan (Eid al-Fitr)"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["05-28","Feast of the Sacrifice (Eid al-Adha)"],["05-29","Feast of the Sacrifice (Eid al-Adha)"],["06-16","Islamic New Year"],["08-25","Birthday of Muhammad (Mawlid)"],["12-02","National Day"]],"2027":[["01-01","New Year's Day"],["01-05","Laylat al-Mi'raj"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-10","End of Ramadan (Eid al-Fitr)"],["03-11","End of Ramadan (Eid al-Fitr)"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["05-17","Feast of the Sacrifice (Eid al-Adha)"],["05-18","Feast of the Sacrifice (Eid al-Adha)"],["06-06","Islamic New Year"],["08-14","Birthday of Muhammad (Mawlid)"],["12-02","National Day"],["12-25","Laylat al-Mi'raj"]],"2028":[["01-01","New Year's Day"],["02-26","End of Ramadan (Eid al-Fitr)"],["02-27","End of Ramadan (Eid al-Fitr)"],["02-28","End of Ramadan (Eid al-Fitr)"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["05-06","Feast of the Sacrifice (Eid al-Adha)"],["05-07","Feast of the Sacrifice (Eid al-Adha)"],["05-25","Islamic New Year"],["08-03","Birthday of Muhammad (Mawlid)"],["12-02","National Day"],["12-14","Laylat al-Mi'raj"]]},"SA":{"2025":[["02-22","Founding Day"],["03-30","End of Ramadan (Eid al-Fitr)"],["03-31","End of Ramadan (Eid al-Fitr)"],["04-01","End of Ramadan (Eid al-Fitr)"],["04-02","End of Ramadan (Eid al-Fitr)"],["06-05","Feast of the Sacrifice (Eid al-Adha)"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-07","Feast of the Sacrifice (Eid al-Adha)"],["06-08","Feast of the Sacrifice (Eid al-Adha)"],["09-23","National Day"]],"2026":[["02-22","Founding Day"],["03-19","End of Ramadan (Eid al-Fitr)"],["03-20","End of Ramadan (Eid al-Fitr)"],["03-21","End of Ramadan (Eid al-Fitr)"],["03-22","End of Ramadan (Eid al-Fitr)"],["05-26","Feast of the Sacrifice (Eid al-Adha)"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["05-28","Feast of the Sacrifice (Eid al-Adha)"],["05-29","Feast of the Sacrifice (Eid al-Adha)"],["09-23","National Day"]],"2027":[["02-22","Founding Day"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-10","End of Ramadan (Eid al-Fitr)"],["03-11","End of Ramadan (Eid al-Fitr)"],["03-12","End of Ramadan (Eid al-Fitr)"],["05-15","Feast of the Sacrifice (Eid al-Adha)"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["05-17","Feast of the Sacrifice (Eid al-Adha)"],["05-18","Feast of the Sacrifice (Eid al-Adha)"],["09-23","National Day"]],"2028":[["02-22","Founding Day"],["02-26","End of Ramadan (Eid al-Fitr)"],["02-27","End of Ramadan (Eid al-Fitr)"],["02-28","End of Ramadan (Eid al-Fitr)"],["02-29","End of Ramadan (Eid al-Fitr)"],["05-04","Feast of the Sacrifice (Eid al-Adha)"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["05-06","Feast of the Sacrifice (Eid al-Adha)"],["05-07","Feast of the Sacrifice (Eid al-Adha)"],["09-23","National Day"]]},"TR":{"2025":[["01-01","New Year's Day"],["03-30","End of Ramadan (Eid al-Fitr)"],["03-31","End of Ramadan (Eid al-Fitr)"],["04-01","End of Ramadan (Eid al-Fitr)"],["04-02","End of Ramadan (Eid al-Fitr)"],["04-23","National Sovereignty and Children's Day"],["05-01","Labour and Solidarity Day"],["05-19","Commemoration of Atatürk, Youth and Sports Day"],["06-06","Feast of the Sacrifice (Eid al-Adha)"],["06-07","Feast of the Sacrifice (Eid al-Adha)"],["06-08","Feast of the Sacrifice (Eid al-Adha)"],["06-09","Feast of the Sacrifice (Eid al-Adha)"],["06-10","Feast of the Sacrifice (Eid al-Adha)"],["07-15","Democracy and National Unity Day"],["08-30","Victory Day"],["10-29","Republic Day"]],"2026":[["01-01","New Year's Day"],["03-20","End of Ramadan (Eid al-Fitr)"],["03-21","End of Ramadan (Eid al-Fitr)"],["03-22","End of Ramadan (Eid al-Fitr)"],["03-23","End of Ramadan (Eid al-Fitr)"],["04-23","National Sovereignty and Children's Day"],["05-01","Labour and Solidarity Day"],["05-19","Commemoration of Atatürk, Youth and Sports Day"],["05-27","Feast of the Sacrifice (Eid al-Adha)"],["05-28","Feast of the Sacrifice (Eid al-Adha)"],["05-29","Feast of the Sacrifice (Eid al-Adha)"],["05-30","Feast of the Sacrifice (Eid al-Adha)"],["05-31","Feast of the Sacrifice (Eid al-Adha)"],["07-15","Democracy and National Unity Day"],["08-30","Victory Day"],["10-29","Republic Day"]],"2027":[["01-01","New Year's Day"],["03-09","End of Ramadan (Eid al-Fitr)"],["03-10","End of Ramadan (Eid al-Fitr)"],["03-11","End of Ramadan (Eid al-Fitr)"],["03-12","End of Ramadan (Eid al-Fitr)"],["04-23","National Sovereignty and Children's Day"],["05-01","Labour and Solidarity Day"],["05-16","Feast of the Sacrifice (Eid al-Adha)"],["05-17","Feast of the Sacrifice (Eid al-Adha)"],["05-18","Feast of the Sacrifice (Eid al-Adha)"],["05-19","Feast of the Sacrifice (Eid al-Adha) / Commemoration of Atatürk, Youth and Sports Day"],["05-20","Feast of the Sacrifice (Eid al-Adha)"],["07-15","Democracy and National Unity Day"],["08-30","Victory Day"],["10-29","Republic Day"]],"2028":[["01-01","New Year's Day"],["02-26","End of Ramadan (Eid al-Fitr)"],["02-27","End of Ramadan (Eid al-Fitr)"],["02-28","End of Ramadan (Eid al-Fitr)"],["02-29","End of Ramadan (Eid al-Fitr)"],["04-23","National Sovereignty and Children's Day"],["05-01","Labour and Solidarity Day"],["05-05","Feast of the Sacrifice (Eid al-Adha)"],["05-06","Feast of the Sacrifice (Eid al-Adha)"],["05-07","Feast of the Sacrifice (Eid al-Adha)"],["05-08","Feast of the Sacrifice (Eid al-Adha)"],["05-09","Feast of the Sacrifice (Eid al-Adha)"],["05-19","Commemoration of Atatürk, Youth and Sports Day"],["07-15","Democracy and National Unity Day"],["08-30","Victory Day"],["10-29","Republic Day"]]},"IL":{"2025":[["04-13","Passover (Pesach)"],["04-19","Mimouna, Seventh day of Passover"],["05-01","Independence Day (Yom HaAtzmaut)"],["06-02","Shavuot (Feast of Weeks)"],["09-23","Rosh Hashanah (Yom Teruah)"],["09-24","Rosh Hashanah (Day 2)"],["10-02","Day of Atonement (Yom Kippur)"],["10-07","Feast of Tabernacles (Sukkot)"],["10-14","Simchat Torah/ Shmini Atzeret"]],"2026":[["04-02","Passover (Pesach)"],["04-08","Mimouna, Seventh day of Passover"],["04-22","Independence Day (Yom HaAtzmaut)"],["05-22","Shavuot (Feast of Weeks)"],["09-12","Rosh Hashanah (Yom Teruah)"],["09-13","Rosh Hashanah (Day 2)"],["09-21","Day of Atonement (Yom Kippur)"],["09-26","Feast of Tabernacles (Sukkot)"],["10-03","Simchat Torah/ Shmini Atzeret"]],"2027":[["04-22","Passover (Pesach)"],["04-28","Mimouna, Seventh day of Passover"],["05-12","Independence Day (Yom HaAtzmaut)"],["06-11","Shavuot (Feast of Weeks)"],["10-02","Rosh Hashanah (Yom Teruah)"],["10-03","Rosh Hashanah (Day 2)"],["10-11","Day of Atonement (Yom Kippur)"],["10-16","Feast of Tabernacles (Sukkot)"],["10-23","Simchat Torah/ Shmini Atzeret"]],"2028":[["04-11","Passover (Pesach)"],["04-17","Mimouna, Seventh day of Passover"],["05-02","Independence Day (Yom HaAtzmaut)"],["05-31","Shavuot (Feast of Weeks)"],["09-21","Rosh Hashanah (Yom Teruah)"],["09-22","Rosh Hashanah (Day 2)"],["09-30","Day of Atonement (Yom Kippur)"],["10-05","Feast of Tabernacles (Sukkot)"],["10-12","Simchat Torah/ Shmini Atzeret"]]}};
+const YEARS=[2025,2026,2027,2028];
+
+/* ---------- curated periods ---------- */
+// k: official 公式 / forecast 予測 / custom 慣習 / season 休暇シーズン
+const CURATED=[
+ // China (State Council, 2025-11-04)
+ ["CN","2026-01-01","2026-01-03","元旦","official",0,"",["2026-01-04"]],
+ ["CN","2026-02-15","2026-02-23","春節（旧正月）","official",1,"訪日旅行の年間最大ピーク。連休前後の週末も旅行需要が高い。",["2026-02-14","2026-02-28"]],
+ ["CN","2026-04-04","2026-04-06","清明節","official",0,"",[]],
+ ["CN","2026-05-01","2026-05-05","労働節","official",1,"春の大型連休。日本のゴールデンウィークと重なり航空券・ホテルが高騰しやすい。",["2026-05-09"]],
+ ["CN","2026-06-19","2026-06-21","端午節","official",0,"",[]],
+ ["CN","2026-09-25","2026-09-27","中秋節","official",0,"",[]],
+ ["CN","2026-10-01","2026-10-07","国慶節（ゴールデンウィーク）","official",1,"秋の最大ピーク。",["2026-09-20","2026-10-10"]],
+ ["CN","2027-01-01","2027-01-03","元旦","forecast",0,"例年11月に国務院が翌年の日程を発表。",[]],
+ ["CN","2027-02-05","2027-02-12","春節（旧正月）","forecast",1,"旧暦元日は2/6（土）。8〜9連休になる見込み。正式日程は2026年11月頃発表。",[]],
+ ["CN","2027-04-03","2027-04-05","清明節","forecast",0,"",[]],
+ ["CN","2027-05-01","2027-05-05","労働節","forecast",1,"5連休になる見込み。",[]],
+ ["CN","2027-10-01","2027-10-07","国慶節（ゴールデンウィーク）","forecast",1,"7連休になる見込み。",[]],
+ // Taiwan (行政院人事行政總處)
+ ["TW","2026-02-14","2026-02-22","春節","official",1,"9連休。訪日旅行のピーク。",[]],
+ ["TW","2026-02-27","2026-03-01","和平紀念日","official",0,"",[]],
+ ["TW","2026-04-03","2026-04-06","兒童節・清明節","official",0,"",[]],
+ ["TW","2026-05-01","2026-05-03","勞動節","official",0,"",[]],
+ ["TW","2026-06-19","2026-06-21","端午節","official",0,"",[]],
+ ["TW","2026-09-25","2026-09-28","中秋節・教師節","official",0,"",[]],
+ ["TW","2026-10-09","2026-10-11","國慶日","official",0,"",[]],
+ ["TW","2026-10-24","2026-10-26","台灣光復節","official",0,"",[]],
+ ["TW","2026-12-25","2026-12-27","行憲紀念日","official",0,"",[]],
+ ["TW","2027-01-01","2027-01-03","元旦","official",0,"",[]],
+ ["TW","2027-02-04","2027-02-10","春節","official",1,"7連休。",[]],
+ ["TW","2027-02-27","2027-03-01","和平紀念日","official",0,"",[]],
+ ["TW","2027-04-03","2027-04-06","兒童節・清明節","official",0,"",[]],
+ ["TW","2027-04-30","2027-05-02","勞動節","official",0,"",[]],
+ ["TW","2027-10-09","2027-10-11","國慶日","official",0,"",[]],
+ ["TW","2027-10-23","2027-10-25","台灣光復節","official",0,"",[]],
+ ["TW","2027-12-24","2027-12-26","行憲紀念日","official",0,"",[]],
+ // Korea
+ ["KR","2026-02-14","2026-02-18","ソルラル（旧正月）","official",1,"5連休。",[]],
+ ["KR","2026-09-24","2026-09-27","チュソク（秋夕）","official",1,"4連休。",[]],
+ ["KR","2027-02-06","2027-02-09","ソルラル（旧正月）","official",1,"振替休日を含む4連休。",[]],
+ ["KR","2027-09-14","2027-09-16","チュソク（秋夕）","official",1,"火〜木の3連休。前後に有給を足すと最大9連休になり、海外旅行需要が高まる。",[]],
+ // Thailand
+ ["TH","2026-04-11","2026-04-15","ソンクラーン（タイ正月）","official",1,"週末と合わせて5連休。",[]],
+ ["TH","2027-04-13","2027-04-15","ソンクラーン（タイ正月）","official",1,"政府が前後に臨時休日を追加することがある。",[]],
+ // Indonesia
+ ["ID","2027-03-06","2027-03-14","レバラン（断食明け大祭）","forecast",1,"政府の一斉休暇（cuti bersama）が加わり長期休暇になる見込み。",[]],
+ // Japan (reference)
+ ["JP","2026-12-29","2027-01-03","年末年始","custom",1,"官公庁・多くの企業の休み。",[]],
+ ["JP","2027-04-29","2027-05-05","ゴールデンウィーク","official",1,"4/30（金）を休むと7連休。",[]],
+ ["JP","2027-08-13","2027-08-16","お盆休み","custom",0,"",[]],
+ ["JP","2027-12-29","2028-01-03","年末年始","custom",1,"",[]],
+ // Western seasons (school holiday guides)
+ ["US","2026-11-26","2026-11-29","サンクスギビング","official",1,"国内の帰省・旅行が最も集中する週末。",[]],
+ ["US","2026-12-19","2027-01-03","ホリデーシーズン","season",1,"学校の冬休みの目安。年末の海外旅行シーズン。",[]],
+ ["US","2027-03-06","2027-03-28","スプリングブレイク","season",0,"学校・大学により1週間ずつ分散。",[]],
+ ["US","2027-06-12","2027-08-22","夏休み","season",0,"学校休暇の目安。",[]],
+ ["US","2027-11-25","2027-11-28","サンクスギビング","official",1,"",[]],
+ ["US","2027-12-18","2028-01-02","ホリデーシーズン","season",1,"",[]],
+ ["GB","2027-07-24","2027-09-05","夏休み","season",0,"イングランドの学校休暇の目安。",[]],
+ ["FR","2026-10-17","2026-11-01","万聖節休暇（トゥッサン）","season",0,"学校休暇。",[]],
+ ["FR","2026-12-19","2027-01-03","クリスマス休暇","season",0,"学校休暇。",[]],
+ ["FR","2027-07-03","2027-08-31","夏のバカンス","season",1,"7〜8月に長期休暇を取る人が多い。",[]],
+ ["DE","2027-06-24","2027-09-15","夏休み","season",0,"州ごとに時期をずらして約6週間。",[]],
+ ["AU","2026-12-18","2027-01-27","夏休み","season",1,"学校休暇の目安（NSW）。南半球のため年末年始が夏の旅行シーズン。",[]],
+ ["NZ","2026-12-18","2027-02-01","夏休み","season",1,"学校休暇の目安。",[]],
+];
+// years where the curated list replaces automatic detection
+const AUTHORITATIVE={CN:[2026,2027],TW:[2026,2027]};
+// holidays missing from the dataset
+const EXTRA={
+ TW:{2026:[["05-01","勞動節"],["09-28","教師節"],["10-25","台灣光復節"],["12-25","行憲紀念日"]],
+     2027:[["02-04","小年夜"],["05-01","勞動節"],["09-28","教師節"],["10-25","台灣光復節"],["12-25","行憲紀念日"]],
+     2028:[["05-01","勞動節"],["09-28","教師節"],["10-25","台灣光復節"],["12-25","行憲紀念日"]]},
+ KR:{2027:[["05-01","労働者の日"],["05-03","労働者の日（振替）"]]},
+ IN:{2026:[["03-04","ホーリー"],["10-20","ダシャラー"],["11-08","ディワリ"]],2027:[["10-29","ディワリ"]]},
+};
+const WEEKEND={SA:[5,6],IL:[5,6]};
+// JETRO「祝祭日」ページ（2026年分）で確認した一覧。この国の2026年はこちらを正とする
+const JETRO2026={
+ KR:[["01-01","新正月"],["02-16","ソルラル"],["02-17","ソルラル"],["02-18","ソルラル"],["03-01","三・一節"],["03-02","三・一節（振替）"],["05-05","こどもの日"],["05-24","釈迦誕生日"],["05-25","釈迦誕生日（振替）"],["06-03","全国同時地方選挙"],["06-06","顕忠日"],["08-15","光復節"],["08-17","光復節（振替）"],["09-24","チュソク"],["09-25","チュソク"],["09-26","チュソク"],["10-03","開天節"],["10-05","開天節（振替）"],["10-09","ハングルの日"],["12-25","クリスマス"]],
+ TH:[["01-01","元日"],["01-02","特別休日"],["03-03","マカブーチャ"],["04-06","チャクリー王朝記念日"],["04-13","ソンクラーン"],["04-14","ソンクラーン"],["04-15","ソンクラーン"],["05-01","労働者の日"],["05-04","戴冠記念日"],["05-31","仏誕節"],["06-01","仏誕節（振替）"],["06-03","王妃誕生日"],["07-28","国王誕生日"],["07-29","三宝節"],["08-12","母の日"],["10-13","ラーマ9世記念日"],["10-23","チュラロンコン大王記念日"],["12-05","父の日"],["12-07","父の日（振替）"],["12-10","憲法記念日"],["12-31","大晦日"]],
+ MY:[["02-17","旧正月"],["02-18","旧正月"],["03-20","断食明け大祭"],["03-21","断食明け大祭"],["03-22","断食明け大祭"],["03-23","断食明け大祭（振替）"],["05-01","労働者の日"],["05-27","犠牲祭"],["05-31","仏誕節"],["06-01","国王誕生日"],["06-02","仏誕節（振替）"],["06-17","イスラム新年"],["08-25","預言者生誕祭"],["08-31","独立記念日"],["09-16","マレーシア・デー"],["11-08","ディワリ"],["11-09","ディワリ（振替）"],["12-25","クリスマス"]],
+ ID:[["01-01","元日"],["01-16","ムハンマド昇天祭"],["02-17","旧正月"],["03-19","ニュピ"],["03-21","断食明け大祭"],["03-22","断食明け大祭"],["03-23","断食明け大祭"],["04-03","聖金曜日"],["04-05","イースター"],["05-01","労働者の日"],["05-14","キリスト昇天祭"],["05-27","犠牲祭"],["05-31","仏誕節"],["06-01","パンチャシラの日"],["06-16","イスラム新年"],["08-17","独立記念日"],["08-25","預言者生誕祭"],["12-25","クリスマス"]],
+ VN:[["01-01","元日"],["02-16","テト（旧正月）"],["02-17","テト（旧正月）"],["02-18","テト（旧正月）"],["02-19","テト（旧正月）"],["02-20","テト（旧正月）"],["04-26","フンヴォン王の命日"],["04-27","フンヴォン王の命日（振替）"],["04-30","南部解放記念日"],["05-01","メーデー"],["08-31","振替休日"],["09-01","建国記念日"],["09-02","建国記念日"],["11-24","ベトナム文化の日"]],
+ PH:[["01-01","元日"],["02-17","旧正月"],["03-20","断食明け大祭"],["04-02","聖木曜日"],["04-03","聖金曜日"],["04-04","聖土曜日"],["04-09","勇者の日"],["05-01","労働者の日"],["05-27","犠牲祭"],["06-12","独立記念日"],["08-21","ニノイ・アキノの日"],["08-31","国家英雄の日"],["11-01","諸聖人の日"],["11-02","死者の日"],["11-30","ボニファシオの日"],["12-08","無原罪の聖母"],["12-24","クリスマスイブ"],["12-25","クリスマス"],["12-30","リサールの日"],["12-31","大晦日"]],
+ AU:[["01-01","元日"],["01-26","オーストラリア・デー"],["04-03","聖金曜日"],["04-04","聖土曜日"],["04-05","イースター"],["04-06","イースターマンデー"],["04-25","アンザック・デー"],["04-27","アンザック・デー（振替）"],["12-25","クリスマス"],["12-26","ボクシングデー"],["12-28","ボクシングデー（振替）"]],
+ AE:[["01-01","元日"],["03-19","断食明け大祭"],["03-20","断食明け大祭"],["03-21","断食明け大祭"],["03-22","断食明け大祭"],["05-26","アラファトの日"],["05-27","犠牲祭"],["05-28","犠牲祭"],["05-29","犠牲祭"],["06-15","イスラム新年"],["08-28","預言者生誕祭"],["12-02","建国記念日"],["12-03","建国記念日"]],
+ GB:[["01-01","元日"],["04-03","聖金曜日"],["04-06","イースターマンデー"],["05-04","アーリーメイ・バンクホリデー"],["05-25","スプリング・バンクホリデー"],["08-31","サマー・バンクホリデー"],["12-25","クリスマス"],["12-26","ボクシングデー"],["12-28","ボクシングデー（振替）"]],
+};
+// JETRO 国・地域別「祝祭日」ページ（確認できたもの）
+const JETRO_URL={CN:"asia/cn",KR:"asia/kr",HK:"asia/hk",TH:"asia/th",SG:"asia/sg",MY:"asia/my",ID:"asia/idn",VN:"asia/vn",PH:"asia/ph",IN:"asia/in",US:"n_america/us",AU:"oceania/au",AE:"middle_east/ae",GB:"europe/uk",FR:"europe/fr"};
+const SRC_EXTRA={TW:["行政院人事行政總處","https://www.dgpa.gov.tw/"]};
+const SRC_NOTE={IN:"祝日はニューデリー基準。州によって異なる。",GB:"イングランド・ウェールズ基準。スコットランドと北アイルランドは一部異なる。",AU:"全国共通の祝日のみ。州ごとの祝日は別。",AE:"イスラム暦の祝日は月の観測で前後することがある。",PH:"イスラム暦の祝日は直前に確定。",MY:"イスラム教・ヒンドゥー教の祝日は変更の可能性あり。"};
+// JNTO 訪日外客数 2025年（確定値）
+const VISITORS={KR:9459711,CN:9095931,TW:6763424,US:3306820,HK:2517399,TH:1233103,AU:1058396,PH:885023,SG:726251,CA:688019,VN:678594,ID:640577,MY:636575,GB:535004,FR:457566,DE:429479,IN:315062,IT:309377,ES:245576,MX:200395};
+const fmtV=v=>(v/1e4).toFixed(1)+"万人";
+
+/* ---------- names ---------- */
+const NAMES={JP:"日本",CN:"中国",TW:"台湾",HK:"香港",KR:"韓国",TH:"タイ",SG:"シンガポール",MY:"マレーシア",ID:"インドネシア",PH:"フィリピン",VN:"ベトナム",IN:"インド",AU:"オーストラリア",NZ:"ニュージーランド",US:"アメリカ",CA:"カナダ",MX:"メキシコ",BR:"ブラジル",GB:"イギリス",IE:"アイルランド",FR:"フランス",DE:"ドイツ",IT:"イタリア",ES:"スペイン",NL:"オランダ",BE:"ベルギー",CH:"スイス",AT:"オーストリア",SE:"スウェーデン",NO:"ノルウェー",DK:"デンマーク",FI:"フィンランド",PT:"ポルトガル",PL:"ポーランド",CZ:"チェコ",AE:"アラブ首長国連邦",SA:"サウジアラビア",TR:"トルコ",IL:"イスラエル"};
+const REGIONS=[
+ ["東アジア",["JP","CN","TW","HK","KR"]],
+ ["東南アジア",["TH","SG","MY","ID","PH","VN"]],
+ ["南アジア・中東",["IN","AE","SA","TR","IL"]],
+ ["オセアニア",["AU","NZ"]],
+ ["北米・中南米",["US","CA","MX","BR"]],
+ ["ヨーロッパ",["GB","IE","FR","DE","IT","ES","NL","BE","CH","AT","SE","NO","DK","FI","PT","PL","CZ"]],
+];
+const PRESETS=[
+ ["訪日上位10",["JP","KR","CN","TW","US","HK","TH","AU","PH","SG","CA"]],
+ ["アジア",["JP","CN","TW","HK","KR","TH","SG","MY","ID","PH","VN"]],
+ ["欧米",["JP","US","CA","GB","FR","DE","IT","ES","AU"]],
+ ["ムスリム圏",["JP","ID","MY","AE","SA","TR"]],
+];
+const TR=[
+ [/substitute day|대체공휴일|更换日|振替/i,""],
+ [/^New Year's Eve$/,"大晦日"],[/^New Year's Day$|Hari Tahun Baru|Hari tahun baru/,"元日"],[/Day after New Year's Day/,"新年休暇"],
+ [/Chinese New Year|Tahun Baru (Cina|Imlek)|Spring Festival/,"旧正月"],[/Vietnamese New Year/,"テト（旧正月）"],[/Korean New Year|설날/,"ソルラル"],
+ [/Korean Thanksgiving|추석/,"チュソク"],[/Songkran/,"ソンクラーン"],
+ [/Eid al-Fitr|Hari Raya (Puasa|Aidil Fitri|Idul Fitri)|End of Ramadan|Ramazan Bayramı/,"断食明け大祭"],
+ [/Eid al-Adha|Hari Raya Haji|Idul Adha|Feast of the Sacrifice|Kurban/,"犠牲祭"],
+ [/Islamic New Year|Awal Muharram/,"イスラム新年"],[/Mawlid|Maulid/,"預言者生誕祭"],
+ [/Good Friday/,"聖金曜日"],[/Easter Monday/,"イースターマンデー"],[/Easter Sunday/,"イースター"],[/Easter Saturday/,"聖土曜日"],[/Maundy Thursday/,"聖木曜日"],
+ [/Ascension/,"キリスト昇天祭"],[/Whit Monday/,"聖霊降臨祭の月曜日"],[/Pentecost/,"聖霊降臨祭"],[/Corpus Christi/,"聖体祭"],
+ [/Christmas Eve/,"クリスマスイブ"],[/Christmas/,"クリスマス"],[/Boxing Day|St\. Stephen/,"ボクシングデー"],
+ [/Assumption/,"聖母被昇天祭"],[/All Saints/,"諸聖人の日"],[/All Souls/,"死者の日"],[/Immaculate Conception/,"無原罪の聖母"],[/Epiphany/,"公現祭"],
+ [/Thanksgiving Day$/,"感謝祭"],[/Independence Day/,"独立記念日"],[/National Day/,"建国記念日"],[/Labour Day|Labor Day/,"労働者の日"],
+ [/Memorial Day/,"戦没者追悼記念日"],[/Martin Luther King/,"キング牧師記念日"],[/Washington's Birthday/,"大統領の日"],[/Juneteenth/,"ジューンティーンス"],
+ [/Columbus Day/,"コロンブス・デー"],[/Veterans Day/,"退役軍人の日"],[/Canada Day/,"カナダ・デー"],
+ [/Bastille Day/,"革命記念日（パリ祭）"],[/Armistice Day/,"休戦記念日"],[/Victory Day/,"戦勝記念日"],
+ [/bank holiday/i,"バンクホリデー"],[/Australia Day/,"オーストラリア・デー"],[/Anzac|ANZAC/,"アンザック・デー"],[/Waitangi/,"ワイタンギ・デー"],
+ [/King's Birthday|Agong/,"国王誕生日"],[/Queen/,"王妃誕生日"],[/Vesak|Buddha|Visakha/,"仏誕節"],[/Makha Bucha/,"マカブーチャ"],[/Asalha|Buddhist Lent/,"三宝節・入安居"],
+ [/Chakri/,"チャクリー王朝記念日"],[/Coronation/,"戴冠記念日"],[/Chulalongkorn/,"チュラロンコン大王記念日"],[/Bhumibol/,"ラーマ9世記念日"],
+ [/Deepavali|Diwali/,"ディワリ"],[/Republic Day/,"共和国記念日"],[/Gandhi/,"ガンジー生誕日"],[/Nyepi/,"ニュピ"],[/Malaysia Day/,"マレーシア・デー"],
+ [/Carnival/,"カーニバル"],[/Passover/,"過越祭"],[/Rosh Hashanah/,"ユダヤ新年"],[/Yom Kippur/,"贖罪の日"],[/Sukkot/,"仮庵の祭り"],
+ [/Children's Day/,"こどもの日"],[/Constitution Day/,"憲法記念日"],[/Liberation Day/,"光復節"],[/Hangul/,"ハングルの日"],[/Independence Movement/,"三・一節"],[/National Foundation/,"開天節"],
+ [/Midsummer/,"夏至祭"],[/King's Day/,"国王の日"],[/St\. Patrick/,"聖パトリックの日"],
+];
+function jaName(n){
+  if(/[぀-ヿ㐀-鿿]/.test(n)) return n;
+  for(const [re,ja] of TR){ if(re.test(n) && ja){ const sub=/substitute/i.test(n)?"（振替）":""; return ja+sub; } }
+  return n;
+}
+const cname=c=>NAMES[c]||c;
+
+/* ---------- dates ---------- */
+const dn=s=>Math.round(Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))/864e5);
+const iso=n=>new Date(n*864e5).toISOString().slice(0,10);
+const dow=n=>((n%7)+4+7)%7;
+const W="日月火水木金土";
+const md=n=>{const s=iso(n);return (+s.slice(5,7))+"/"+(+s.slice(8,10))};
+const mdw=n=>md(n)+"（"+W[dow(n)]+"）";
+const nowJST=new Date(Date.now()+9*36e5);
+const TODAY=dn(nowJST.toISOString().slice(0,10));
+
+/* ---------- build model ---------- */
+const HOL={}; // HOL[c] = Map(dayNumber -> [names])
+for(const c of Object.keys(NAMES)){
+  const m=new Map();
+  const add=(d,n)=>{const k=dn(d);const a=m.get(k)||[];const j=jaName(n);if(!a.includes(j))a.push(j);m.set(k,a)};
+  for(const y of YEARS){
+    if(y===2026&&JETRO2026[c]) JETRO2026[c].forEach(([d,n])=>add(y+"-"+d,n));
+    else ((RAW[c]||{})[y]||[]).forEach(([d,n])=>n.split(" / ").forEach(x=>add(y+"-"+d,x)));
+    (((EXTRA[c]||{})[y])||[]).forEach(([d,n])=>add(y+"-"+d,n));
+  }
+  HOL[c]=m;
+}
+const PER={}; // PER[c] = [{s,e,n,k,major,note,work}]
+for(const c of Object.keys(NAMES)){
+  const list=CURATED.filter(r=>r[0]===c).map(r=>({c,s:dn(r[1]),e:dn(r[2]),n:r[3],k:r[4],major:!!r[5],note:r[6],work:(r[7]||[]).map(dn)}));
+  const blocking=list.filter(p=>p.k!=="season");
+  const auth=AUTHORITATIVE[c]||[];
+  const we=WEEKEND[c]||[6,0];
+  const off=n=>HOL[c].has(n)||we.includes(dow(n));
+  const start=dn("2025-01-01"), end=dn("2028-12-31");
+  let n=start;
+  while(n<=end){
+    if(!off(n)){n++;continue}
+    let a=n; while(n<=end&&off(n))n++; const b=n-1;
+    const len=b-a+1; let hasHol=false; const names=[];
+    for(let i=a;i<=b;i++){const h=HOL[c].get(i);if(h){hasHol=true;h.forEach(x=>{const base=x.replace(/\s*[（(](振替休日|振替|更换日|대체공휴일)[）)]\s*$/,"");if(!names.includes(base))names.push(base)})}}
+    if(len<3||!hasHol) continue;
+    const y=+iso(a).slice(0,4);
+    if(auth.includes(y)) continue;
+    if(blocking.some(p=>p.s<=b&&p.e>=a)) continue;
+    const label=names.slice(0,2).join("・")+(names.length>2?" ほか":"");
+    const major=len>=5||/旧正月|テト|ソルラル|チュソク|断食明け|犠牲祭|ソンクラーン|クリスマス|春節|農曆|国庆|国慶|イースター|聖金曜日/.test(names.join());
+    list.push({c,s:a,e:b,n:label,k:"auto",major,note:"",work:[]});
+  }
+  list.sort((x,y)=>x.s-y.s);
+  PER[c]=list;
+}
+function sortCountries(list){const order=REGIONS.flatMap(r=>r[1]);return list.slice().sort((a,b)=>(a==="JP"?-1:0)-(b==="JP"?-1:0)||(VISITORS[b]||0)-(VISITORS[a]||0)||order.indexOf(a)-order.indexOf(b))}
+const KIND={official:"公式",forecast:"予測",custom:"慣習",season:"休暇シーズン",auto:"祝日＋週末"};
+
+/* ---------- state ---------- */
+const KEY="world-holidays-v1";
+let S={view:"tl",year:+iso(TODAY).slice(0,4),month:+iso(TODAY).slice(5,7),countries:PRESETS[0][1].slice(),zoom:3,lf:"all",lr:"next"};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)S=Object.assign(S,s,{year:S.year,month:S.month});}catch(e){}
+if(!YEARS.includes(S.year))S.year=2026;
+S.countries=sortCountries(S.countries.filter(c=>NAMES[c]));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({view:S.view,countries:S.countries,zoom:S.zoom,lf:S.lf,lr:S.lr}))}catch(e){}};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+$("#asof").textContent="TODAY  "+iso(TODAY).replace(/-/g,".")+"（"+W[dow(TODAY)]+"）";
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll(".seg[aria-label='表示切替'] button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===S.view));
+  $("#ylabel").textContent=S.year;
+  $("#yprev").disabled=S.year<=YEARS[0]; $("#ynext").disabled=S.year>=YEARS[YEARS.length-1];
+  $("#yprev").style.opacity=$("#yprev").disabled?.25:1; $("#ynext").style.opacity=$("#ynext").disabled?.25:1;
+  $("#ystep").hidden=S.view==="l"&&S.lr==="next";
+  $("#pickBtn").textContent="国・地域（"+S.countries.length+"）";
+  if(S.view==="tl")renderTL(); else if(S.view==="m")renderMonth(); else renderList();
+}
+
+function renderTL(){
+  const y=S.year, a=dn(y+"-01-01"), b=dn(y+"-12-31"), days=b-a+1, ppd=S.zoom, w=days*ppd;
+  let h=`<div class="tl-tools"><span>表示幅</span><div class="seg"><button data-z="3" aria-pressed="${ppd===3}">年間</button><button data-z="9" aria-pressed="${ppd===9}">拡大</button></div><span>バーをタップで詳細</span></div>`;
+  h+=`<div class="tl-scroll" id="tls"><div class="tl" style="width:${w+96}px">`;
+  let months="";
+  for(let m=1;m<=12;m++){const s=dn(y+"-"+String(m).padStart(2,"0")+"-01")-a;months+=`<div class="tl-m" style="left:${s*ppd}px">${["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][m-1]}</div>`}
+  const grid=Array.from({length:12},(_,i)=>`<div class="tl-grid" style="left:${(dn(y+"-"+String(i+1).padStart(2,"0")+"-01")-a)*ppd}px"></div>`).join("");
+  const today=(TODAY>=a&&TODAY<=b)?`<div class="tl-today" style="left:${(TODAY-a)*ppd+96}px"></div>`:"";
+  h+=`<div class="tl-months"><div class="tl-label">COUNTRY</div><div class="tl-track" style="width:${w}px">${months}</div></div>`;
+  for(const c of S.countries){
+    let t=grid;
+    for(const [d] of HOL[c]) if(d>=a&&d<=b) t+=`<div class="tl-hol" style="left:${(d-a)*ppd}px;width:${Math.max(ppd,2)}px"></div>`;
+    PER[c].forEach((p,i)=>{
+      if(p.e<a||p.s>b)return;
+      const s=Math.max(p.s,a), e=Math.min(p.e,b);
+      const lb=(ppd>=9&&p.k!=="season")?`<span class="lb">${esc(p.n)}</span>`:"";
+      t+=`<button class="tl-p ${p.k}${p.major?" major":""}" data-c="${c}" data-i="${i}" style="left:${(s-a)*ppd}px;width:${(e-s+1)*ppd}px" aria-label="${esc(cname(c)+" "+p.n+" "+md(p.s)+"から"+md(p.e))}">${lb}</button>`;
+    });
+    h+=`<div class="tl-row"><div class="tl-label" title="${VISITORS[c]?"訪日客数 "+fmtV(VISITORS[c])+"（2025年）":""}"><b>${c}</b><span>${cname(c)}</span></div><div class="tl-track" style="width:${w}px">${t}</div></div>`;
+  }
+  h+=today+`</div></div>`;
+  if(!S.countries.length) h=`<div class="empty">国・地域を選んでください</div>`;
+  $("#view").innerHTML=h;
+  const sc=$("#tls");
+  if(sc&&TODAY>=a&&TODAY<=b){ sc.scrollLeft=Math.max(0,(TODAY-a)*ppd-sc.clientWidth*0.35); }
+}
+
+function dayInfo(n){
+  const out=[];
+  for(const c of S.countries){
+    const ps=PER[c].filter(p=>p.s<=n&&p.e>=n);
+    const hol=HOL[c].get(n);
+    const work=PER[c].some(p=>p.work.includes(n));
+    if(ps.length||hol||work) out.push({c,ps,hol,work});
+  }
+  return out;
+}
+function renderMonth(){
+  const y=S.year,m=S.month;
+  const first=dn(y+"-"+String(m).padStart(2,"0")+"-01");
+  const nextM=m===12?dn((y+1)+"-01-01"):dn(y+"-"+String(m+1).padStart(2,"0")+"-01");
+  const start=first-dow(first);
+  let h=`<div class="mhead"><div class="stepper"><button id="mprev" aria-label="前の月">&#8249;</button></div><h2>${y}.${String(m).padStart(2,"0")}</h2><div class="stepper"><button id="mnext" aria-label="次の月">&#8250;</button></div></div><div class="cal">`;
+  h+=[..."SMTWTFS"].map((x,i)=>`<div class="dw">${["SUN","MON","TUE","WED","THU","FRI","SAT"][i]}</div>`).join("");
+  const cells=Math.ceil((nextM-start)/7)*7;
+  for(let i=0;i<cells;i++){
+    const n=start+i, out=n<first||n>=nextM, info=out?[]:dayInfo(n);
+    const chips=info.slice(0,6).map(x=>{
+      const on=x.ps.some(p=>p.k!=="season"); const ss=!on&&x.ps.length&&!x.hol;
+      return `<span class="chip${on?" on":""}${ss?" ss":""}">${x.c}</span>`}).join("")+(info.length>6?`<span class="chip more">+${info.length-6}</span>`:"");
+    const we=[0,6].includes(dow(n));
+    h+=`<button class="cell${out?" out":""}${we?" we":""}${n===TODAY?" td":""}" data-d="${n}" ${out?"tabindex='-1'":""} aria-label="${mdw(n)}"><span class="dn">${+iso(n).slice(8,10)}</span><span class="chips">${chips}</span></button>`;
+  }
+  h+=`</div>`;
+  $("#view").innerHTML=h;
+  $("#mprev").onclick=()=>{ if(S.month===1){ if(S.year<=YEARS[0])return; S.year--;S.month=12;} else S.month--; render(); };
+  $("#mnext").onclick=()=>{ if(S.month===12){ if(S.year>=YEARS[YEARS.length-1])return; S.year++;S.month=1;} else S.month++; render(); };
+}
+
+function listItems(){
+  let a,b;
+  if(S.lr==="next"){a=TODAY;b=TODAY+365}else{a=dn(S.year+"-01-01");b=dn(S.year+"-12-31")}
+  const items=[];
+  S.countries.forEach(c=>PER[c].forEach((p,i)=>{
+    if(p.e<a||p.s>b)return;
+    const len=p.e-p.s+1;
+    if(S.lf==="5"&&len<5)return;
+    if(S.lf==="major"&&!p.major)return;
+    items.push({p,i,len});
+  }));
+  items.sort((x,y)=>x.p.s-y.p.s||y.len-x.len);
+  return items;
+}
+function renderList(){
+  const items=listItems();
+  let h=`<div class="lf"><div class="seg"><button data-lr="next" aria-pressed="${S.lr==="next"}">今日から1年</button><button data-lr="year" aria-pressed="${S.lr==="year"}">${S.year}年</button></div>
+  <div class="seg"><button data-lf="all" aria-pressed="${S.lf==="all"}">すべて</button><button data-lf="5" aria-pressed="${S.lf==="5"}">5日以上</button><button data-lf="major" aria-pressed="${S.lf==="major"}">大型のみ</button></div>
+  <div class="spacer"></div><button class="pill" id="copyBtn">表をコピー</button></div>`;
+  if(!items.length){h+=`<div class="empty">該当する連休はありません</div>`;$("#view").innerHTML=h;return}
+  let cur="";
+  items.forEach(({p,i,len})=>{
+    const ym=iso(p.s).slice(0,7);
+    if(ym!==cur){if(cur)h+=`</div>`;cur=ym;h+=`<div class="lgroup"><h3>${ym.replace("-",".")}</h3>`}
+    const until=p.s-TODAY;
+    const rt=p.s<=TODAY&&p.e>=TODAY?"開催中":until>0?`あと${until}日`:"終了";
+    const tag=(p.major?`<span class="tag mj">大型</span>`:"")+`<span class="tag${p.k==="forecast"?" fc":""}">${KIND[p.k]}</span>`;
+    h+=`<button class="li" data-c="${p.c}" data-i="${i}"><span class="dt">${mdw(p.s)}<small>〜 ${mdw(p.e)}</small></span><span class="cc">${p.c}</span><span class="nm"><b data-cc="${p.c}">${esc(p.n)}</b>${tag}<small>${cname(p.c)}${p.note?" ・ "+esc(p.note):""}</small></span><span class="rt"><strong>${len}日</strong>${rt}</span></button>`;
+  });
+  h+=`</div>`;
+  $("#view").innerHTML=h;
+  $("#copyBtn").onclick=copyTable;
+}
+function copyTable(){
+  const rows=[["国・地域","コード","名称","開始","終了","日数","区分","大型","メモ"]];
+  listItems().forEach(({p,len})=>rows.push([cname(p.c),p.c,p.n,iso(p.s),iso(p.e),len,KIND[p.k],p.major?"○":"",p.note]));
+  const tsv=rows.map(r=>r.join("\t")).join("\n");
+  const done=()=>toast("コピーしました。スプレッドシートに貼り付けできます");
+  try{navigator.clipboard.writeText(tsv).then(done,()=>fallbackCopy(tsv,done))}catch(e){fallbackCopy(tsv,done)}
+}
+function fallbackCopy(t,done){
+  const ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+  let ok=false;try{ok=document.execCommand("copy")}catch(e){}
+  ta.remove(); ok?done():toast("コピーできませんでした");
+}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* ---------- sheets ---------- */
+function openSheet(html){
+  const ov=document.createElement("div");ov.className="ov";ov.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest(".x"))ov.remove()});
+  document.body.appendChild(ov);
+  const f=ov.querySelector(".x");f&&f.focus();
+  return ov;
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const o=document.querySelector(".ov");o&&o.remove()}});
+
+function jpOverlap(s,e){
+  const hits=[];
+  for(let n=s;n<=e;n++){const h=HOL.JP.get(n);if(h)hits.push(mdw(n)+" "+h.join("・"))}
+  return hits;
+}
+function periodSheet(c,i){
+  const p=PER[c][i], len=p.e-p.s+1;
+  const hol=[]; for(let n=p.s;n<=p.e;n++){const h=HOL[c].get(n);if(h)hol.push([n,h.join("・")])}
+  const jp=c==="JP"?[]:jpOverlap(p.s,p.e);
+  let h=`<div class="sh-h"><div><div class="eb">${c} ・ ${cname(c)}</div><h2>${esc(p.n)}</h2></div><button class="x" aria-label="閉じる">&times;</button></div>
+  <dl class="kv"><dt>期間</dt><dd>${iso(p.s).slice(0,4)}年 ${mdw(p.s)} 〜 ${mdw(p.e)}</dd>
+  <dt>日数</dt><dd>${len}日間</dd>
+  <dt>区分</dt><dd>${KIND[p.k]}${p.major?" ・ 大型":""}</dd>
+  <dt>開始まで</dt><dd>${p.s>TODAY?"あと"+(p.s-TODAY)+"日":p.e>=TODAY?"開催中":"終了"}</dd>
+  ${p.work.length?`<dt>振替出勤日</dt><dd>${p.work.map(mdw).join("、")}</dd>`:""}</dl>`;
+  if(p.note)h+=`<div class="note">${esc(p.note)}</div>`;
+  if(hol.length)h+=`<div class="sec">期間中の祝日</div><ul class="dl">${hol.map(([n,x])=>`<li><span>${mdw(n)}</span><span>${esc(x)}</span></li>`).join("")}</ul>`;
+  if(c!=="JP")h+=`<div class="sec">日本の同時期</div><ul class="dl">${jp.length?jp.map(x=>`<li><span>重なり</span><span>${esc(x)}</span></li>`).join(""):`<li><span>—</span><span>日本の祝日とは重なりません</span></li>`}</ul>`;
+  h+=countryInfo(c);
+  openSheet(h);
+}
+function countryInfo(c){
+  const rows=[];
+  if(VISITORS[c]) rows.push(`<li><span>訪日客数</span><span>${fmtV(VISITORS[c])}（2025年・JNTO）</span></li>`);
+  if(SRC_NOTE[c]) rows.push(`<li><span>注意</span><span>${esc(SRC_NOTE[c])}</span></li>`);
+  if(JETRO_URL[c]) rows.push(`<li><span>出典</span><span><a href="https://www.jetro.go.jp/world/${JETRO_URL[c]}/holiday.html" target="_blank" rel="noopener">JETRO 祝祭日ページ</a></span></li>`);
+  if(SRC_EXTRA[c]) rows.push(`<li><span>出典</span><span><a href="${SRC_EXTRA[c][1]}" target="_blank" rel="noopener">${esc(SRC_EXTRA[c][0])}</a></span></li>`);
+  return rows.length?`<div class="sec">${esc(cname(c))}について</div><ul class="dl">${rows.join("")}</ul>`:"";
+}
+const D_MIN=dn(YEARS[0]+"-01-01"), D_MAX=dn(YEARS[YEARS.length-1]+"-12-31");
+function dayBody(n){
+  const info=dayInfo(n);
+  let h=`<div class="sh-h"><div><div class="eb">${iso(n).replace(/-/g,".")}${n===TODAY?" ・ TODAY":""}</div><h2>${mdw(n)}</h2></div><button class="x" aria-label="閉じる">&times;</button></div>
+  <div class="dnav"><button class="dprev" aria-label="前の日" ${n<=D_MIN?"disabled":""}>&#8249; ${md(n-1)}</button><span>スワイプで日付を移動</span><button class="dnext" aria-label="次の日" ${n>=D_MAX?"disabled":""}>${md(n+1)} &#8250;</button></div>`;
+  if(!info.length)h+=`<p class="empty">選択中の国・地域に祝日はありません</p>`;
+  info.forEach(x=>{
+    h+=`<div class="sec">${x.c} ・ ${cname(x.c)}</div><ul class="dl">`;
+    if(x.hol)h+=`<li><span>祝日</span><span>${esc(x.hol.join("・"))}</span></li>`;
+    if(x.work)h+=`<li><span>出勤日</span><span>連休の振替で平日扱い</span></li>`;
+    x.ps.forEach(p=>{h+=`<li><span>${KIND[p.k]}</span><span>${esc(p.n)}（${md(p.s)}〜${md(p.e)}・${p.e-p.s+1}日）</span></li>`});
+    h+=`</ul>`;
+  });
+  return h;
+}
+function markCell(n){
+  document.querySelectorAll(".cell.sel").forEach(c=>c.classList.remove("sel"));
+  const c=document.querySelector(`.cell[data-d="${n}"]:not(.out)`);c&&c.classList.add("sel");
+}
+function daySheet(n){
+  const ov=openSheet(`<div class="dsb">${dayBody(n)}</div>`);
+  ov.classList.add("day");
+  const sheet=ov.querySelector(".sheet");
+  let cur=n, busy=false;
+  markCell(cur);
+  const go=dir=>{
+    const next=cur+dir;
+    if(busy||next<D_MIN||next>D_MAX)return;
+    busy=true;
+    const old=sheet.querySelector(".dsb");
+    old.style.transition="transform .16s ease-in, opacity .16s ease-in";
+    old.style.transform=`translateX(${dir>0?-40:40}%)`;old.style.opacity="0";
+    setTimeout(()=>{
+      cur=next;
+      const y=+iso(cur).slice(0,4), m=+iso(cur).slice(5,7);
+      if(S.view==="m"&&(y!==S.year||m!==S.month)){S.year=y;S.month=m;render();}
+      markCell(cur);
+      const nb=document.createElement("div");nb.className="dsb";nb.innerHTML=dayBody(cur);
+      nb.style.transform=`translateX(${dir>0?40:-40}%)`;nb.style.opacity="0";
+      old.replaceWith(nb);sheet.scrollTop=0;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        nb.style.transition="transform .2s ease-out, opacity .2s ease-out";nb.style.transform="none";nb.style.opacity="1";
+        setTimeout(()=>{busy=false},200);
+      }));
+    },160);
+  };
+  sheet.addEventListener("click",e=>{
+    if(e.target.closest(".dprev"))go(-1);
+    else if(e.target.closest(".dnext"))go(1);
+  });
+  // swipe
+  let sx=0,sy=0,st=0,drag=false,lock=null;
+  sheet.addEventListener("touchstart",e=>{if(busy||e.touches.length>1)return;const t=e.touches[0];sx=t.clientX;sy=t.clientY;st=Date.now();drag=true;lock=null},{passive:true});
+  sheet.addEventListener("touchmove",e=>{
+    if(!drag)return;const t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(lock===null&&(Math.abs(dx)>8||Math.abs(dy)>8))lock=Math.abs(dx)>Math.abs(dy)?"x":"y";
+    if(lock==="x"){
+      e.preventDefault();
+      const b=sheet.querySelector(".dsb");const edge=(dx>0&&cur<=D_MIN)||(dx<0&&cur>=D_MAX);
+      b.style.transition="none";b.style.transform=`translateX(${edge?dx*0.2:dx}px)`;b.style.opacity=String(1-Math.min(Math.abs(dx)/400,.5));
+    }
+  },{passive:false});
+  const end=e=>{
+    if(!drag)return;drag=false;
+    const t=e.changedTouches[0],dx=t.clientX-sx,dt=Date.now()-st;
+    const b=sheet.querySelector(".dsb");
+    if(lock==="x"&&(Math.abs(dx)>70||(Math.abs(dx)>30&&dt<300))){go(dx<0?1:-1);}
+    else if(b){b.style.transition="transform .18s ease-out, opacity .18s";b.style.transform="none";b.style.opacity="1";}
+  };
+  sheet.addEventListener("touchend",end);sheet.addEventListener("touchcancel",end);
+  const key=e=>{if(!document.body.contains(ov)){document.removeEventListener("keydown",key);return}
+    if(e.key==="ArrowLeft")go(-1);else if(e.key==="ArrowRight")go(1);};
+  document.addEventListener("keydown",key);
+  new MutationObserver((_,o)=>{if(!document.body.contains(ov)){markCell(-1);o.disconnect()}}).observe(document.body,{childList:true});
+}
+function pickerSheet(){
+  let sel=new Set(S.countries);
+  const body=()=>REGIONS.map(([r,cs])=>`<div class="reg"><h4>${r}</h4><div class="cgrid">${cs.map(c=>`<label class="cbox" data-n="${c} ${cname(c)}"><input type="checkbox" id="ck-${c}" value="${c}" ${sel.has(c)?"checked":""}><b>${c}</b><span>${cname(c)}${VISITORS[c]?`<small class="vis">${fmtV(VISITORS[c])}</small>`:""}</span></label>`).join("")}</div></div>`).join("");
+  const ov=openSheet(`<div class="sh-h"><div><div class="eb">COUNTRIES</div><h2>表示する国・地域</h2></div><button class="x" aria-label="閉じる">&times;</button></div>
+   <div class="presets">${PRESETS.map((p,i)=>`<button data-p="${i}">${p[0]}</button>`).join("")}<button data-p="clear">すべて外す</button></div>
+   <input class="pk-search" id="pkq" type="search" placeholder="国名・コードで絞り込み" autocomplete="off">
+   <div id="pkbody">${body()}</div>
+   <div class="sh-foot"><span class="asof" id="pkn">${sel.size}件選択</span><button class="btn-k" id="pkok">適用</button></div>`);
+  const sync=()=>{ov.querySelector("#pkn").textContent=sel.size+"件選択"};
+  ov.querySelector("#pkbody").addEventListener("change",e=>{const v=e.target.value;e.target.checked?sel.add(v):sel.delete(v);sync()});
+  ov.querySelector(".presets").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sel=new Set(b.dataset.p==="clear"?[]:PRESETS[+b.dataset.p][1]);ov.querySelector("#pkbody").innerHTML=body();sync()});
+  ov.querySelector("#pkq").addEventListener("input",e=>{const q=e.target.value.trim().toLowerCase();ov.querySelectorAll(".cbox").forEach(l=>l.hidden=!!q&&!l.dataset.n.toLowerCase().includes(q))});
+  ov.querySelector("#pkok").onclick=()=>{
+    S.countries=sortCountries([...sel]);save();ov.remove();render();
+  };
+}
+
+/* ---------- events ---------- */
+document.querySelector(".seg[aria-label='表示切替']").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.view=b.dataset.v;save();render()});
+$("#yprev").onclick=()=>{if(S.year>YEARS[0]){S.year--;render()}};
+$("#ynext").onclick=()=>{if(S.year<YEARS[YEARS.length-1]){S.year++;render()}};
+$("#pickBtn").onclick=pickerSheet;
+$("#view").addEventListener("click",e=>{
+  const z=e.target.closest("[data-z]"); if(z){S.zoom=+z.dataset.z;save();render();return}
+  const lr=e.target.closest("[data-lr]"); if(lr){S.lr=lr.dataset.lr;save();render();return}
+  const lf=e.target.closest("[data-lf]"); if(lf){S.lf=lf.dataset.lf;save();render();return}
+  const p=e.target.closest("[data-c][data-i]"); if(p){periodSheet(p.dataset.c,+p.dataset.i);return}
+  const d=e.target.closest(".cell[data-d]"); if(d&&!d.classList.contains("out")){daySheet(+d.dataset.d)}
+});
+render();
+</script>
+
+</body>
+</html>
